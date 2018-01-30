@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "require(dplyr)\n\n##############################\n##### set up functions #######\n##############################\n\nproduce_dataframe <- function(N, f_a, f_b, overlap_size, n_frames) {\n  y <- rnorm(N)\n  id <- 1:N\n  if (n_frames == 2) {\n    N_A <- N*f_a+N*overlap_size\n    N_B <- N*f_b+N*overlap_size\n    id_A <- sort(sample(1:N, N_A))\n    id_B <- sort(c(id[!(id %in% id_A)], sample(id_A, N*overlap_size)))\n    df <- data.frame(id = 1:N, y = y, A = numeric(N), B = numeric(N))\n    df[id_A,]$A <- 1 \n    df[id_B,]$B <- 1\n    df$domain[df$A == 1 & df$B == 0] <-  \"a\" \n    df$domain[df$A == 0 & df$B == 1] <-  \"b\" \n    df$domain[df$A == 1 & df$B == 1] <-  \"ab\"\n    return(df)\n  }\n  if (n_frames != 2) {\n    print(\"non ancora sviluppato quando numero di frames > 2\")\n  }\n\n}\n\ndata <- produce_dataframe(N = 100, f_a = 0.09, f_b = 0.4, overlap_size = 0.51, n_frame = 2)\n\n# how do I find lambda?\noptimal_sample_size <- function(N_A, N_a, lambda, N_ab, ov_c_A, N_B, N_b, ov_c_B) {\n  alpha <- sqrt((N_A*(N_a+lambda^2*N_ab)/ov_c_A))*(sqrt(N_A*(N_a + lambda^2*N_ab)/ov_c_A) + \n                                                     sqrt(N_B*(N_b+lambda^2*N_ab)/ov_c_B))\n  return(list(alpha = alpha))\n}\n\noptimal_sample_size(N_A = 10, N_a = 1, lambda = 2, N_ab = 3, ov_c_A = 3, N_B = 4, N_b = 1, ov_c_B = 2)\n\n#######################\n### overlap design ####\n#######################\n\n# how does the overlap happen?\nov_sampling <- function(data, n, n_A) {\n  n_B <- n - n_A\n  s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)\n  s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)\n  s_a <- s_A %>% filter(domain == \"a\")\n  s_ab <- s_A %>% filter(domain == \"ab\") %>% bind_rows(s_B %>% filter(domain == \"ab\"))\n  s_b <- s_B %>% filter(domain == \"b\")\n  final_sample <- list(s_a = s_a, s_b = s_b, s_ab = s_ab)\n  return(final_sample)\n}\n\nov_sampling(data = data, n = 10, n_A = 5)\n\nov_variance_A <- function(N_a, N_A, S_a, lambda, N_ab, S_ab) {\n  variance_A <- N_a*N_A*S_a^2 + lambda^2*N_ab*N_A*S_ab^2\n  return(list(variance_A = variance_A))\n}\n\nov_variance_B <- function(N_n, N_B, S_b, lambda, N_ab, S_ab) {\n  variance_B <- N_b*N_B*S_b^2 + (1-lambda)^2*N_ab*N_B*S_ab^2\n  return(list(variance_B = variance_B))\n}\n\n# how to calculate hartley's variance?\nvariance_hartley <- function() {\n  \n}\n\n\n#########################\n### screener design #####\n#########################\n\nscr_sampling <- function(data, n, n_B) {\n  n_A <- n - n_B\n  s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)\n  s_b <- s_B %>% filter(domain == \"b\")\n  s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)\n  final_sample <- list(s_A = s_A, s_b = s_b)\n  return(final_sample)\n}\n\nscr_sampling(data = data, n = 10, n_B = 5)\n\n",
+    "created" : 1516010235947.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "19841272",
+    "id" : "EECD018D",
+    "lastKnownWriteTime" : 1516987509,
+    "last_content_update" : 1516987509803,
+    "path" : "~/uni/ricerca/MF/functions.R",
+    "project_path" : "functions.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
