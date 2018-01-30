@@ -4,6 +4,9 @@ require(dplyr)
 # N, N_A, N_B, N_a, N_ab, N_b, n
 # f_a = N_a/N, f_b = N_b/N
 
+# given costs quantities:
+# c_A1 (cost to contact unit), c_A2 (cost to finish interview), c_B1, c_B2
+
 ##############################
 ##### set up functions #######
 ##############################
@@ -80,6 +83,28 @@ scr_sampling <- function(data, n, n_B) {
 
 scr_sampling(data = data, n = 10, n_B = 5)
 
+########################
+######## costs #########
+########################
+
+
+ov_cost <- function(c_1, c_2) {ov_c <- c_1 + c_2; return(ov_c)}
+
+ov_costs_ratio_AB <- function(c_A1, c_A2, c_B1, c_B2) {
+  cc_cl <- ov_cost(c_A1, c_A2)/ov_cost(c_B1, c_B2)
+  return(cc_cl)
+}
+
+# cost of the screened domain (cell only)
+scr_cost <- function(N_b, N_B, c_B1, c_B2) {
+  scr_cost <- c_B1 + N_b/N_B*c_B2 
+  return(scr_cost)
+}
+
+scr_costs_ratio_AB <- function(N_b, N_B, c_A1, c_A2, c_B1, c_B2) {
+  cc_cl <- ov_cost(c_A1, c_A2)/scr_cost(N_b, N_B, c_B1, c_B2)
+  return(cc_cl)
+}
 
 ###########################
 ### estimation ####
@@ -170,3 +195,4 @@ scr_variance_hat_Y_b  <- function(N_b, S_b, n_b) {
   scr_var_hat_Y_b <- (N_b^2*S_b^2)/n_b
   return(scr_var_hat_Y_b)
 }
+
