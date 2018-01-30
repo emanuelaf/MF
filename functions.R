@@ -85,4 +85,4 @@ scr_sampling <- function(data, n, n_B) {
 }
 
 scr_sampling(data = data, n = 10, n_B = 5)
-
+ 
