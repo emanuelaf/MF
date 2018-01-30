@@ -38,7 +38,7 @@ optimal_sample_size <- function(N_A, N_a, lambda, N_ab, ov_c_A, N_B, N_b, ov_c_B
 optimal_sample_size(N_A = 10, N_a = 1, lambda = 2, N_ab = 3, ov_c_A = 3, N_B = 4, N_b = 1, ov_c_B = 2)
 
 #######################
-### overlap design ####
+####### designs #######
 #######################
 
 # how does the overlap happen?
@@ -54,6 +54,56 @@ ov_sampling <- function(data, n, n_A) {
 }
 
 ov_sampling(data = data, n = 10, n_A = 5)
+
+
+
+scr_sampling <- function(data, n, n_B) {
+  n_A <- n - n_B
+  s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
+  s_b <- s_B %>% filter(domain == "b")
+  s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)
+  final_sample <- list(s_A = s_A, s_b = s_b)
+  return(final_sample)
+}
+
+scr_sampling(data = data, n = 10, n_B = 5)
+
+
+###########################
+### estimation ####
+##########################
+
+est_hat_Y_a <-  function(s, n_a, N_a) {
+  s_a <- s %>% filter(domain == "a")
+  hat_Y_a <- sum(s_a$Y)*n_a/N_a
+  return(hat_Y_a)
+}
+
+# this is no good because I need to recognise who came from sample A and who from sample B
+est_hat_Y_ab_A <- function(s, N_ab_A) {
+  s_ab <- s %>% filter(domain == "ab")
+  hat_Y_ab_A <- sum(s_a$Y)*n_a/N_a
+  return(hat_Y_ab_A)
+} 
+
+# this is no good because I need to recognise who came from sample A and who from sample B
+est_hat_Y_ab_B <- function(s, N_ab_B) {
+  s_ab <- s %>% filter(domain == "ab")
+  hat_Y_ab_B <- sum(s_a$Y)*n_a/N_a
+  return(hat_Y_ab_B)
+} 
+
+est_hat_Y_b <- function(s, n_B, N_B) {
+  s_b <- s %>% filter(domain == "b")
+  hat_Y_b <- sum(s_b$Y)*n_b/N_b
+  return(hat_Y_b)
+} 
+
+
+hat_Y_lambda <- function(hat_Y_a, hat_Y_ab_A, hat_Y_ab_B, hat_Y_b, lambda) {
+  hat_Y_lambda_est <- hat_Y_a + lambda*hat_Y_ab_A + (1-lambda)*hat_Y_ab_B + hat_Y_b
+}
+
 
 ov_variance_A <- function(N_a, N_A, S_a, lambda, N_ab, S_ab) {
   variance_A <- N_a*N_A*S_a^2 + lambda^2*N_ab*N_A*S_ab^2
@@ -71,18 +121,4 @@ variance_hartley <- function() {
 }
 
 
-#########################
-### screener design #####
-#########################
 
-scr_sampling <- function(data, n, n_B) {
-  n_A <- n - n_B
-  s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
-  s_b <- s_B %>% filter(domain == "b")
-  s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)
-  final_sample <- list(s_A = s_A, s_b = s_b)
-  return(final_sample)
-}
-
-scr_sampling(data = data, n = 10, n_B = 5)
- 
