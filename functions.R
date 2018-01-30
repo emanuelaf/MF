@@ -130,7 +130,7 @@ ov_variance_hat_Y_B <- function(N_n, N_B, S_b, lambda, N_ab, S_ab) {
   return(list(var_hat_Y_B = var_hat_Y_B))
 }
 
-# how to calculate hartley's variance?
+
 variance_hat_Y_lambda <- function(n_A, n_B, variance_A, variance_B) {
   var_hat_Y_lambda <- variance_A/n_A + variance_B/n_B
   return(list(var_hat_Y_lambda = var_hat_Y_lambda))
@@ -153,10 +153,20 @@ scr_est_hat_Y_b <-  function(s, n_b, N_b) {
   return(scr_hat_Y_b)
 }
 
-
+# overall estimation
 scr_est_hat_Y <-  function(scr_hatY_A, scr_hat_Y_b) {
   scr_hat_Y <- scr_hatY_A + scr_hat_Y_b
   return(scr_hat_Y)
 }
 
 
+scr_variance_hat_Y_A  <- function(N_A, S_A, n_A) {
+  scr_var_hat_Y_A <- (N_A^2*S_A^2)/n_A
+  return(scr_var_hat_Y_A)
+}
+
+
+scr_variance_hat_Y_b  <- function(N_b, S_b, n_b) {
+  scr_var_hat_Y_b <- (N_b^2*S_b^2)/n_b
+  return(scr_var_hat_Y_b)
+}
