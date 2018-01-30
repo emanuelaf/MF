@@ -1,5 +1,9 @@
 require(dplyr)
 
+# given:
+# N, N_A, N_B, N_a, N_ab, N_b
+# f_a = N_a/N, f_b = N_b/N
+
 ##############################
 ##### set up functions #######
 ##############################
@@ -28,14 +32,22 @@ produce_dataframe <- function(N, f_a, f_b, overlap_size, n_frames) {
 
 data <- produce_dataframe(N = 100, f_a = 0.09, f_b = 0.4, overlap_size = 0.51, n_frame = 2)
 
-# how do I find lambda?
-optimal_sample_size <- function(N_A, N_a, lambda, N_ab, ov_c_A, N_B, N_b, ov_c_B) {
-  alpha <- sqrt((N_A*(N_a+lambda^2*N_ab)/ov_c_A))*(sqrt(N_A*(N_a + lambda^2*N_ab)/ov_c_A) + 
-                                                     sqrt(N_B*(N_b+lambda^2*N_ab)/ov_c_B))
-  return(list(alpha = alpha))
+# still to do: function to optimise lambda
+
+
+
+# 
+
+# sample size to be allocated in A and B given n
+optimal_sample_size <- function(N_A, N_a, n, lambda = "lambda_opt", N_ab, ov_c_A, N_B, N_b, ov_c_B) {
+  if (lambda == "lambda_opt") {print("to add function for lambda optimisation")}
+  alpha <- (sqrt(N_A*(N_a+lambda^2*N_ab)/ov_c_A))/((sqrt(N_A*(N_a+lambda^2*N_ab)/ov_c_A)) + 
+                                                     (sqrt(N_B*(N_b+(1-lambda)^2*N_ab)/ov_c_B)))
+  return(list(n_A = alpha*n, n_B = (1-alpha)*n, alpha = alpha))
 }
 
-optimal_sample_size(N_A = 10, N_a = 1, lambda = 2, N_ab = 3, ov_c_A = 3, N_B = 4, N_b = 1, ov_c_B = 2)
+optimal_sample_size(N_A = 10, N_a = 5, lambda = 0.5, n = 4, 
+                    N_ab = 10, ov_c_A = 3, N_B = 10, N_b = 5, ov_c_B = 2)
 
 #######################
 ####### designs #######
@@ -73,6 +85,7 @@ scr_sampling(data = data, n = 10, n_B = 5)
 ### estimation ####
 ##########################
 
+# n_a/N_a because we consider a simple random sampling (following Lohr and Brick)
 est_hat_Y_a <-  function(s, n_a, N_a) {
   s_a <- s %>% filter(domain == "a")
   hat_Y_a <- sum(s_a$Y)*n_a/N_a
