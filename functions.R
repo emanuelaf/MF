@@ -87,7 +87,7 @@ scr_sampling(data = data, n = 10, n_B = 5)
 
 #### overlap
 # n_a/N_a because we consider a simple random sampling (following Lohr and Brick)
-est_hat_Y_a <-  function(s, n_a, N_a) {
+est_hat_Y_a <-  function(s, n_A, N_A) {
   s_a <- s %>% filter(domain == "a")
   hat_Y_a <- sum(s_a$Y)*n_a/N_a
   return(hat_Y_a)
@@ -139,4 +139,24 @@ variance_hat_Y_lambda <- function(n_A, n_B, variance_A, variance_B) {
 
 
 ### screening
+# n_a/N_a because we consider a simple random sampling (following Lohr and Brick)
+scr_est_hat_Y_A <-  function(s, n_A, N_A) {
+  s_A <- s %>% filter_if(str_detect(domain, 'a'))
+  scr_hat_Y_A <- sum(s_A$Y)*n_A/N_A
+  return(scr_hat_Y_A)
+}
+
+
+scr_est_hat_Y_b <-  function(s, n_b, N_b) {
+  s_b <- s %>% filter_if(domain == 'b')
+  scr_hat_Y_b <- sum(s_b$Y)*n_b/N_b
+  return(scr_hat_Y_b)
+}
+
+
+scr_est_hat_Y <-  function(scr_hatY_A, scr_hat_Y_b) {
+  scr_hat_Y <- scr_hatY_A + scr_hat_Y_b
+  return(scr_hat_Y)
+}
+
 
