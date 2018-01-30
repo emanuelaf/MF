@@ -1,7 +1,7 @@
 require(dplyr)
 
-# given:
-# N, N_A, N_B, N_a, N_ab, N_b
+# given quantities:
+# N, N_A, N_B, N_a, N_ab, N_b, n
 # f_a = N_a/N, f_b = N_b/N
 
 ##############################
@@ -53,7 +53,7 @@ optimal_sample_size(N_A = 10, N_a = 5, lambda = 0.5, n = 4,
 ####### designs #######
 #######################
 
-# how does the overlap happen?
+# overlap, how does the overlap happen?
 ov_sampling <- function(data, n, n_A) {
   n_B <- n - n_A
   s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)
@@ -68,7 +68,7 @@ ov_sampling <- function(data, n, n_A) {
 ov_sampling(data = data, n = 10, n_A = 5)
 
 
-
+# screening
 scr_sampling <- function(data, n, n_B) {
   n_A <- n - n_B
   s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
@@ -85,6 +85,7 @@ scr_sampling(data = data, n = 10, n_B = 5)
 ### estimation ####
 ##########################
 
+#### overlap
 # n_a/N_a because we consider a simple random sampling (following Lohr and Brick)
 est_hat_Y_a <-  function(s, n_a, N_a) {
   s_a <- s %>% filter(domain == "a")
@@ -113,25 +114,29 @@ est_hat_Y_b <- function(s, n_B, N_B) {
 } 
 
 
+# overall estimation
 hat_Y_lambda <- function(hat_Y_a, hat_Y_ab_A, hat_Y_ab_B, hat_Y_b, lambda) {
   hat_Y_lambda_est <- hat_Y_a + lambda*hat_Y_ab_A + (1-lambda)*hat_Y_ab_B + hat_Y_b
 }
 
-
-ov_variance_A <- function(N_a, N_A, S_a, lambda, N_ab, S_ab) {
-  variance_A <- N_a*N_A*S_a^2 + lambda^2*N_ab*N_A*S_ab^2
-  return(list(variance_A = variance_A))
+# variance estimation S_a, S_ab and S_b, where do they come from??
+ov_variance_hat_Y_A <- function(N_a, N_A, S_a, lambda, N_ab, S_ab) {
+  var_hat_Y_A <- N_a*N_A*S_a^2 + lambda^2*N_ab*N_A*S_ab^2
+  return(list(var_hat_Y_A = var_hat_Y_A))
 }
 
-ov_variance_B <- function(N_n, N_B, S_b, lambda, N_ab, S_ab) {
-  variance_B <- N_b*N_B*S_b^2 + (1-lambda)^2*N_ab*N_B*S_ab^2
-  return(list(variance_B = variance_B))
+ov_variance_hat_Y_B <- function(N_n, N_B, S_b, lambda, N_ab, S_ab) {
+  var_hat_Y_B <- N_b*N_B*S_b^2 + (1-lambda)^2*N_ab*N_B*S_ab^2
+  return(list(var_hat_Y_B = var_hat_Y_B))
 }
 
 # how to calculate hartley's variance?
-variance_hartley <- function() {
-  
+variance_hat_Y_lambda <- function(n_A, n_B, variance_A, variance_B) {
+  var_hat_Y_lambda <- variance_A/n_A + variance_B/n_B
+  return(list(var_hat_Y_lambda = var_hat_Y_lambda))
 }
 
 
+
+### screening
 
