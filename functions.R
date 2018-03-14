@@ -11,14 +11,14 @@ require(dplyr)
 ##### set up functions #######
 ##############################
 
-produce_dataframe <- function(N, f_a, f_b, overlap_size, n_frames) {
+produce_dataframe <- function(n_frames, N, f_a, f_b, f_c, overlap_ab, overlap_ac, overlap_bc, overlap_abc) {
   y <- rnorm(N)
   id <- 1:N
   if (n_frames == 2) {
-    N_A <- N*f_a+N*overlap_size
-    N_B <- N*f_b+N*overlap_size
+    N_A <- N*f_a+N*overlap_ab
+    N_B <- N*f_b+N*overlap_ab
     id_A <- sort(sample(1:N, N_A))
-    id_B <- sort(c(id[!(id %in% id_A)], sample(id_A, N*overlap_size)))
+    id_B <- sort(c(id[!(id %in% id_A)], sample(id_A, N*overlap_ab)))
     df <- data.frame(id = 1:N, y = y, A = numeric(N), B = numeric(N))
     df[id_A,]$A <- 1 
     df[id_B,]$B <- 1
@@ -27,13 +27,14 @@ produce_dataframe <- function(N, f_a, f_b, overlap_size, n_frames) {
     df$domain[df$A == 1 & df$B == 1] <-  "ab"
     return(df)
   }
-  if (n_frames != 2) {
+  if (n_frames == 3) {
     print("non ancora sviluppato quando numero di frames > 2")
   }
-
 }
 
-data <- produce_dataframe(N = 100, f_a = 0.09, f_b = 0.4, overlap_size = 0.51, n_frame = 2)
+
+
+data <- produce_dataframe(N = 100, f_a = 0.09, f_b = 0.4, overlap_ab = 0.51, n_frame = 2)
 
 # still to do: function to optimise lambda
 
@@ -57,7 +58,7 @@ optimal_sample_size(N_A = 10, N_a = 5, lambda = 0.5, n = 4,
 #######################
 
 # overlap, how does the overlap happen?
-ov_sampling <- function(data, n, n_A) {
+ov_sampling_2_frames <- function(data, n, n_A) {
   n_B <- n - n_A
   s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)
   s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
@@ -68,8 +69,34 @@ ov_sampling <- function(data, n, n_A) {
   return(final_sample)
 }
 
-ov_sampling(data = data, n = 10, n_A = 5)
+ov_sampling_2_frames(data = data, n = 10, n_A = 5)
 
+ov_sampling_3_frames <- function(data, n, n_A, n_B) {
+  n_C <- n - n_A - n_B
+  s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)
+  s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
+  s_C <- sample_n(data[data$C == 1 , ], n_C, replace = FALSE)
+  s_a <- s_A %>% filter(domain == "a")
+  s_b <- s_B %>% filter(domain == "b")
+  s_c <- s_C %>% filter(domain == "c")
+  s_ab <- s_A %>% 
+    filter(domain == "ab") %>% 
+    bind_rows(s_B %>% filter(domain == "ab"))
+  s_ac <- s_A %>% 
+    filter(domain == "ac") %>% 
+    bind_rows(s_C %>% filter(domain == "ac"))
+  s_bc <- s_B %>% 
+    filter(domain == "bc") %>% 
+    bind_rows(s_C %>% filter(domain == "bc"))
+  s_abc <- s_A %>% 
+    filter(domain == "abc") %>% 
+    bind_rows(s_B %>% filter(domain == "abc")) %>%
+    bind_rows(s_C %>% filter(domain == "abc"))
+  final_sample <- list(s_a = s_a, s_b = s_b, s_ab = s_ab, s_c = s_c, s_ac = s_ac, s_bc = s_bc, s_abc = s_abc)
+  return(final_sample)
+}
+
+ov_sampling_3_frames(data = data, n = 10, n_A = 5, n_B = 5)
 
 # screening
 scr_sampling <- function(data, n, n_B) {
