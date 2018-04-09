@@ -99,7 +99,7 @@ ov_sampling_3_frames <- function(data, n, n_A, n_B) {
 ov_sampling_3_frames(data = data, n = 10, n_A = 5, n_B = 5)
 
 # screening
-scr_sampling <- function(data, n, n_B) {
+scr_sampling_2_frames <- function(data, n, n_B) {
   n_A <- n - n_B
   s_B <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
   s_b <- s_B %>% filter(domain == "b")
@@ -108,7 +108,16 @@ scr_sampling <- function(data, n, n_B) {
   return(final_sample)
 }
 
-scr_sampling(data = data, n = 10, n_B = 5)
+scr_sampling_2_frames(data = data, n = 10, n_B = 5)
+
+scr_sampling_3_frames <- function(data, sequence = c("A", "B", "C"), n = c()) {
+  n_A <- n[sequence == "A"]
+  n_B <- n[sequence == "B"]
+  n_C <- n[sequence == "C"]
+  s_1 <- sample_n(data[data$B == 1 , ], n_B, replace = FALSE)
+  s_b <- s_B %>% filter(domain == "b")
+  s_A <- sample_n(data[data$A == 1 , ], n_A, replace = FALSE)
+}
 
 ########################
 ######## costs #########
