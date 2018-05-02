@@ -5,7 +5,7 @@ require(dplyr)
 # generate pop with different variance differntials
 # at the moment, N fixed and overlap fixed!!
 
-generate_pop <- function(shape_pars_frame, frame_cost) {
+generate_pop <- function(mu_domains, sd_domains, frame_cost) {
   N <- 70000
   
   A <- c(rep(1, 40000), rep(0, 30000))
@@ -16,11 +16,8 @@ generate_pop <- function(shape_pars_frame, frame_cost) {
     id = 1:N,
     A = A,
     B = B,
-    C = C,
-    Y = ifelse( A == 1, rgamma(10, shape_pars_frame[1]), 
-                               ifelse(B == 1, rgamma(10, shape_pars_frame[2]),
-                                                      ifelse(C == 1, rgamma(10, shape_pars_frame[3]), 0))) 
-  )
+    C = C
+    )
 
   population <- population %>% mutate(domain = ifelse(A == 1 & B == 0 & C == 0, "a",
                                           ifelse(A == 0 & B == 1 & C == 0, "b",
@@ -32,6 +29,25 @@ generate_pop <- function(shape_pars_frame, frame_cost) {
                                                  )))) %>%
     mutate(frame_cost_A = frame_cost[1], frame_cost_B = frame_cost[2], frame_cost_C = frame_cost[3]) %>%
     as_tibble()
+  
+  N_a <- length(population$domain[population$domain == "a"])
+  N_b <- length(population$domain[population$domain == "b"])
+  N_c <- length(population$domain[population$domain == "c"])
+  N_ab <- length(population$domain[population$domain == "ab"])
+  N_bc <- length(population$domain[population$domain == "bc"])
+  N_ac <- length(population$domain[population$domain == "ac"])
+  N_abc <- length(population$domain[population$domain == "abc"])
+
+  
+  population <- population %>% mutate(
+    Y = ifelse(domain == "a", mu_domains[1] + rnorm(N_a, 0, sd_domains[1]),  
+               ifelse(domain == "b", mu_domains[2] + rnorm(N_b, 0, sd_domains[2]),
+               ifelse(domain == "c", mu_domains[3] + rnorm(N_c, 0, sd_domains[3]),
+               ifelse(domain == "ab", mu_domains[4] + rnorm(N_ab, 0, sd_domains[4]),
+               ifelse(domain == "bc", mu_domains[5] + rnorm(N_bc, 0, sd_domains[5]),
+               ifelse(domain == "ac", mu_domains[6] + rnorm(N_ac, 0, sd_domains[6]),
+               ifelse(domain == "abc", mu_domains[7] + rnorm(N_abc, 0, sd_domains[7]), 0)))))))
+  )
   
   return(population)
 
@@ -56,36 +72,27 @@ sample_scr_reduced_size <- function(data, n_A, n_B, n_C) {
   return(samples)
 }
 
-
-# units reallocated in each frame
+# units reallocated in each frame --> togliere e sostituire con riallocazione in B e in C
 sample_scr_new_size_1 <- function(data, s_scr_reduced_size, n_A, n_B, n_C) {
+  n <- n_A + n_B + n_C
   s_A_excluded <- s_scr_reduced_size$s_A_excluded
   s_A_final <- s_scr_reduced_size$s_A_final
-  while(nrow(s_A_final) < n_A) {
-    new_n_A <- n_A - nrow(s_A_final)
-    s_A_init_new <- sample_n(data[data$A == 1 , ] %>% anti_join(s_A_final), new_n_A)
-    s_A_final_new <- s_A_init_new %>% filter(domain == "a")
-    s_A_excluded <- s_A_excluded %>% bind_rows(anti_join(s_A_init_new, s_A_final_new))
-    s_A_final <- s_A_final %>% bind_rows(s_A_final_new)
-  }
   
-  s_B_excluded <- s_scr_reduced_size$s_B_excluded
-  s_B_final <- s_scr_reduced_size$s_B_final
-  while(nrow(s_B_final) < n_B) {
-    new_n_B <- n_B - nrow(s_B_final)
-    s_B_init_new <- sample_n(data[data$B == 1 , ] %>% anti_join(s_B_final), new_n_B)
-    s_B_final_new <- s_B_init_new %>% filter(domain == "b" | domain == "ab")
-    s_B_excluded <- s_B_excluded %>% bind_rows(anti_join(s_B_init_new, s_B_final_new))
-    s_B_final <- s_B_final %>% bind_rows(s_B_final_new)
-  }
-  
-  s_C_init <- s_scr_reduced_size$s_C_init
-  s_C_final <- s_scr_reduced_size$s_C_final
-  
+  new_n_B <- n_B + nrow(s_A_excluded)/2
+  s_B_init <- sample_n(data[data$B == 1 , ], new_n_B)
+  s_B_final <- s_B_init %>% filter(domain == "b" | domain == "ab")
+  s_B_excluded <- anti_join(s_B_init, s_B_final, by = c("id"))
+
+  new_n_C <- n-(nrow(s_B_final) + nrow(s_A_final))
+  s_C_init <- sample_n(data[data$C == 1 , ], new_n_C)
+  s_C_final <- s_C_init 
+
   results <- list(s_A_excluded = s_A_excluded, s_B_excluded = s_B_excluded,
-                  s_A_final = s_A_final, s_B_final = s_B_final, s_C_final = s_C_final)
+                   s_A_final = s_A_final, s_B_final = s_B_final, s_C_final = s_C_final)
   return(results)
 }
+
+
 
 # units reallocated only in less expensive frame, that here coincides with the last one
 sample_scr_new_size_2 <- function(data, n_A, n_B, n_C) {
@@ -135,34 +142,46 @@ cost <- function(s_scr_reduced_size, contact_cost = 0.1) {
 #### ESTIMATORS
 
 # Screener design: stratified estimator
-est_strat <- function(s) {
+est_strat <- function(s, N_a, N_b_ab, N_C) {
   n_A <- nrow(s$s_A_final)
   n_B <- nrow(s$s_B_final)
   n_C <- nrow(s$s_C_final) 
-  hat_Y_A <- ifelse(n_A != 0, as.numeric((s$s_A_final %>% summarise(sum(Y)))/n_A), 0)
-  hat_Y_B <- ifelse(n_B != 0, as.numeric((s$s_B_final %>% summarise(sum(Y)))/n_B), 0)
-  hat_Y_C <- as.numeric((s$s_C_final %>% summarise(sum(Y)))/n_C)
-  hat_Y_str <- hat_Y_A*1000/7000 + hat_Y_B * 2000/7000 + hat_Y_C * 4000/7000
+  hat_Y_A <- ifelse(n_A != 0, as.numeric((s$s_A_final %>% summarise(sum(Y)))), 0)
+  hat_Y_B <- ifelse(n_B != 0, as.numeric((s$s_B_final %>% summarise(sum(Y)))), 0)
+  hat_Y_C <- as.numeric((s$s_C_final %>% summarise(sum(Y))))
+  hat_Y_str <- hat_Y_A*(N_a/n_A) + hat_Y_B * (N_b_ab/n_B) + hat_Y_C * (N_C/n_C)
   return(hat_Y_str)
 }
 
 
 # multiple frame design: multiplicity
-est_mf_multiplicity <- function(s_mf) {
+est_mf_multiplicity <- function(s_mf, N_A, N_B, N_C) {
   hat_Y_m <- ((s_mf$s_A_final %>% filter( domain == "a") %>%  summarise(sum(Y))) +
                  (s_mf$s_A_final %>% filter( domain == "ab") %>% summarise(sum(Y)))/2 +
                  (s_mf$s_A_final %>% filter( domain == "ac") %>% summarise(sum(Y)))/2 +
-                 (s_mf$s_A_final %>% filter( domain == "abc") %>% summarise(sum(Y)))/3)/nrow(s_mf$s_A_final) +
+                 (s_mf$s_A_final %>% filter( domain == "abc") %>% summarise(sum(Y)))/3)*(N_A/nrow(s_mf$s_A_final)) +
     ((s_mf$s_B_final %>% filter( domain == "b") %>% summarise(sum(Y))) +
        (s_mf$s_B_final %>% filter( domain == "ab") %>% summarise(sum(Y)))/2 +
        (s_mf$s_B_final %>% filter( domain == "bc") %>% summarise(sum(Y)))/2 +
-       (s_mf$s_B_final %>% filter( domain == "abc") %>% summarise(sum(Y))/3))/nrow(s_mf$s_B_final) +
+       (s_mf$s_B_final %>% filter( domain == "abc") %>% summarise(sum(Y))/3))*(N_B/nrow(s_mf$s_B_final)) +
     ((s_mf$s_C_final %>% filter( domain == "c") %>% summarise(sum(Y))) +
        (s_mf$s_C_final %>% filter( domain == "ac") %>% summarise(sum(Y)))/2 +
        (s_mf$s_C_final %>% filter( domain == "bc") %>% summarise(sum(Y)))/2 +
-       (s_mf$s_C_final %>% filter( domain == "abc") %>% summarise(sum(Y)))/3)/nrow(s_mf$s_C_final)
+       (s_mf$s_C_final %>% filter( domain == "abc") %>% summarise(sum(Y)))/3)*(N_C/nrow(s_mf$s_C_final))
   
   return(hat_Y_m = as.numeric(hat_Y_m))
+}
+
+var_mf_multiplicity <- function(data, n_A, n_B, n_C) {
+  data <- data %>% mutate(m = A + B + C)
+  data_A <- data %>% filter(A == 1) 
+  data_B <- data %>% filter(B == 1)
+  data_C <- data %>% filter(C == 1)
+  var_A <- (N_A - n_A)/(n_A*(N_A - 1))*(N_A*sum(data_A$Y^2/data_A$m^2) - (sum(data_A$Y/data_A$m))^2)
+  var_B <- (N_B - n_B)/(n_B*(N_B - 1))*(N_B*sum(data_B$Y^2/data_B$m^2) - (sum(data_B$Y/data_B$m))^2)
+  var_C <- (N_C - n_C)/(n_C*(N_C - 1))*(N_C*sum(data_C$Y^2/data_C$m^2) - (sum(data_C$Y/data_C$m))^2)
+  var_m <- var_A + var_B + var_C
+  return(var_m)
 }
 
 
@@ -189,15 +208,17 @@ est_mf_ka <- function(s_mf, N_A, N_B, N_C) {
   Y_abc_C <- s_mf$s_C_final %>% filter(domain == "abc") %>% summarise(sum(Y))
   # KA
   hat_Y_ka <- 
-    ((Y_a + Y_ab_A*((n_A/N_A)/(n_A/N_A + n_B/N_B)) + Y_ac_A*((n_A/N_A)/(n_A/N_A + n_C/N_C)) + 
-       Y_abc_A*((n_A/N_A)/(n_A/N_A + n_B/N_B + n_C/N_C)))/n_A +
+    (Y_a + Y_ab_A*((n_A/N_A)/(n_A/N_A + n_B/N_B)) + Y_ac_A*((n_A/N_A)/(n_A/N_A + n_C/N_C)) + 
+       Y_abc_A*((n_A/N_A)/(n_A/N_A + n_B/N_B + n_C/N_C)))*(N_A/n_A) +
     (Y_b + Y_ab_B*((n_B/N_B)/(n_A/N_A + n_B/N_B)) + Y_bc_B*((n_B/N_B)/(n_B/N_B + n_C/N_C)) 
-     + Y_abc_B*((n_B/N_B)/(n_A/N_A + n_B/N_B + n_C/N_C)))/n_B +  
+     + Y_abc_B*((n_B/N_B)/(n_A/N_A + n_B/N_B + n_C/N_C)))*(N_B/n_B) +  
     (Y_c + Y_bc_C*((n_C/N_C)/(n_B/N_B + n_C/N_C)) + Y_ac_C*((n_C/N_C)/(n_A/N_A + n_C/N_C)) + 
-       Y_abc_C*((n_C/N_C)/(n_A/N_A + n_B/N_B + n_C/N_C)))/n_C)
+       Y_abc_C*((n_C/N_C)/(n_A/N_A + n_B/N_B + n_C/N_C)))*(N_C/n_C)
   
   return(hat_Y_ka = as.numeric(hat_Y_ka))
 }
+
+
 
 
 
