@@ -113,7 +113,7 @@ sample_scr_new_size_2 <- function(data, n_A, n_B, n_C) {
 }
 
 
-# MULTIPLE FRAME DESIGN
+# OVERLAP DESIGN
 sample_mf <- function(data, n_A, n_B, n_C) {
   s_A <- sample_n(data[data$A == 1 , ], n_A)
   s_B <- sample_n(data[data$B == 1 , ], n_B)
@@ -163,7 +163,7 @@ est_mf_multiplicity <- function(s_mf, N_A, N_B, N_C) {
     ((s_mf$s_B_final %>% filter( domain == "b") %>% summarise(sum(Y))) +
        (s_mf$s_B_final %>% filter( domain == "ab") %>% summarise(sum(Y)))/2 +
        (s_mf$s_B_final %>% filter( domain == "bc") %>% summarise(sum(Y)))/2 +
-       (s_mf$s_B_final %>% filter( domain == "abc") %>% summarise(sum(Y))/3))*(N_B/nrow(s_mf$s_B_final)) +
+       (s_mf$s_B_final %>% filter( domain == "abc") %>% summarise(sum(Y)))/3)*(N_B/nrow(s_mf$s_B_final)) +
     ((s_mf$s_C_final %>% filter( domain == "c") %>% summarise(sum(Y))) +
        (s_mf$s_C_final %>% filter( domain == "ac") %>% summarise(sum(Y)))/2 +
        (s_mf$s_C_final %>% filter( domain == "bc") %>% summarise(sum(Y)))/2 +
@@ -219,6 +219,8 @@ est_mf_ka <- function(s_mf, N_A, N_B, N_C) {
 }
 
 
+var_mf_ka <- function(data, n_A, n_B, n_C) {
+}
 
 
 
