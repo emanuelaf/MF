@@ -1,0 +1,183 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage[italian]{babel} % serve per andare a capo automaticamente
+\usepackage[utf8]{inputenc} % serve per leggere gli accenti della tastiera
+\usepackage{booktabs}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{fancyhdr, blindtext}
+\usepackage{parskip}
+\usepackage{multirow}
+
+\usepackage[top=1in, bottom=1.25in, left=1.25in, right=1.25in]{geometry}
+\linespread{1.25}
+\newlength\tindent
+\setlength{\tindent}{\parindent}
+\setlength{\parindent}{0pt}
+\renewcommand{\indent}{\hspace*{\tindent}}
+
+%-----------------------------------------------------------------------------
+\begin{document}
+\title{MF - first results}
+%\author{Emanuela Furfaro \\ emanuela.furfaro@unicatt.it}
+\date{}
+\maketitle
+
+
+\section{Population structure}
+
+We fix the following population parameters:
+
+$N = 70000$
+
+$N_a = 10000$
+
+$N_b = 10000$
+
+$N_c = 10000$
+
+$N_{ab} = 10000$
+
+$N_{ac} = 10000$
+
+$N_{bc} = 10000$
+
+$N_{abc} = 10000$
+
+Then simulate the study variable $Y$ following Lohr and Rao 2005.
+
+$Y_{ik} = \mu_k + \epsilon_{ik}$
+
+where $k$ represents the domain, $\mu_k$ is the average of domain $k$ and $\epsilon_{ik} \sim N(0, \sigma_k)$
+
+
+\textbf{Scenario 1}
+
+$[\mu_a, \mu_b, \mu_c, \mu_{ab}, \mu_{bc}, \mu_{ac}, \mu_{abc}] = [15, 15, 15, 15, 15, 15, 15]$ \\ $[\sigma_a, \sigma_b, \sigma_c, \sigma_{ab}, \sigma_{bc}, \sigma_{ac}, \sigma_{abc}] = [1,1,1,1,1,1,1]$  
+
+
+\begin{table}[]
+\centering
+\caption{Frames parameters}
+\label{my-label}
+\begin{tabular}{l|lll}
+\hline
+frame & Mean & St. Dev. & CV \\
+\hline
+A & 15 & 1 & 0.07  \\
+B & 15 & 1 & 0.07 \\
+C & 15 & 1 & 0.07 \\
+\end{tabular}
+\end{table}
+
+
+\textbf{Scenario 2}
+ 
+$[\mu_a, \mu_b, \mu_c, \mu_{ab}, \mu_{bc}, \mu_{ac}, \mu_{abc}] = [15, 15, 15, 15, 15, 15, 15]$     \\
+$[\sigma_a, \sigma_b, \sigma_c, \sigma_{ab}, \sigma_{bc}, \sigma_{ac}, \sigma_{abc}] = [1,1,4,1,4,4,4]$ 
+
+\begin{table}[]
+\centering
+\caption{Frames parameters}
+\label{my-label}
+\begin{tabular}{l|lll}
+\hline
+frame & Mean & St. Dev. & CV \\
+\hline
+A & 15  & 2.9  & 0.19  \\
+B & 15  & 2.9 & 0.19 \\
+C & 15  & 4 & 0.27 \\
+\end{tabular}
+\end{table}
+
+\textbf{Scenario 3}
+ 
+$[\mu_a, \mu_b, \mu_c, \mu_{ab}, \mu_{bc}, \mu_{ac}, \mu_{abc}] = [15, 15, 15, 15, 15, 15, 15]$     \\
+$[\sigma_a, \sigma_b, \sigma_c, \sigma_{ab}, \sigma_{bc}, \sigma_{ac}, \sigma_{abc}] = [4,4,1,4,1,1,1]$ 
+
+\begin{table}[]
+\centering
+\caption{Frames parameters}
+\label{my-label}
+\begin{tabular}{l|lll}
+\hline
+frame & Mean & St. Dev. & CV \\
+\hline
+A & 15  & 2.9  & 0.19  \\
+B & 15  & 2.9 & 0.19 \\
+C & 15  & 1 & 0.07 \\
+\end{tabular}
+\end{table}
+
+
+\section{Sampling design}
+
+Simple Random Sampling without replacement
+
+$n = 600$; $f_A = f_B = f_C = 0.005 = \frac{200}{40000}$
+
+Sampling sequence: A -> B -> C
+
+\textbf{Screener design}: \textit{1)} without reallocation of $n$; \textit{2)} $n$ reallocated in the cheapest frame; \textit{3)} $n$ reallocated in frame B and then C
+
+
+\textbf{Overlap design}
+
+\section{Results}
+
+
+\begin{table}[]
+\centering
+\caption{Number of discarded units}
+\label{my-label}
+\begin{tabular}{l|llll}
+\hline
+frame & Min. & Median &   Mean  &   Max. \\
+\hline
+A &  125.00 & 150.00 &  150 &    172 \\
+B & 77.0   & 100.0  &  100  &  126 \\
+\end{tabular}
+\end{table}
+
+
+
+
+\begin{table}[]
+\centering
+\caption{Empirical Mean Squard error and Average cost}
+\label{my-label}
+\begin{tabular}{|l|llll|llll|}
+\hline
+  & \multicolumn{4}{l}{Empirical Mean Squared Error} & \multicolumn{4}{l}{Average cost}        \\
+Scenario  & Y\_M    & Y\_str\_1  & Y\_str\_2  & Y\_str3   & Y\_M & Y\_str\_1 & Y\_str\_2 & Y\_str3  \\
+\hline
+1 & 19044.56 & 3733.124 & 3073.348 & 3046.242 & 2000 & 919.5383 & 1256.292 & 1170.4\\
+2 & 20833.18 & 11513    & 8438.607 & 7805.059 & 2000 & 919.5383 & 1256.292 & 1170.4\\
+3 & 20959.44 & 10316.19 & 9307.697 & 9830.041 & 2000 & 919.5383 & 1256.292 & 1170.4\\
+\hline
+\end{tabular}
+\end{table}
+
+
+Considero $n_A = 100$, $n_B = 200$, $n_C = 300$ and Scenario 2:
+
+\begin{table}[]
+\centering
+\caption{Empirical Mean Squard error and Average cost}
+\label{my-label}
+\begin{tabular}{|l|lllll|}
+\hline
+  & \multicolumn{5}{l}{Empirical Mean Squared Error}         \\
+Scenario  & Y\_M    & $Y_{KA}$ & Y\_str\_1  & Y\_str\_2  & Y\_str3 \\
+\hline
+2 & 21472.71 & 24152.71 & 9575.046 & 8119.957 & 7560.884 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\end{document}
+
+
