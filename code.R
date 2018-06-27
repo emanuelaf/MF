@@ -1,11 +1,13 @@
 rm(list=ls())
 
 source("functions2.R")
-
 set.seed(1)
-data <- generate_pop(shape_pars_frame = c(10, 5, 1), c(6, 4, 2))
 
-n <- 30
+data <- generate_pop(mu_domains = c(30, 30, 30, 30, 30, 30, 30), 
+                     sd_domains = c(0.2, 0.2, 10, 0.2, 10, 10, 10),
+                     frame_cost = c(6, 3, 1))
+
+n <- 600
 
 N <- nrow(data)
 
@@ -18,75 +20,90 @@ N_B <- data %>% filter(domain == "b" | domain == "ab" | domain == "bc" | domain 
 
 # sample
 
-n.sim <- 1000
+n.sim <- 2000
 
 res_mf_m <- numeric(n.sim)
 res_mf_ka <- numeric(n.sim)
 res_strat_reduced <- numeric(n.sim)
 res_strat_new_size_1 <- numeric(n.sim)
 res_strat_new_size_2 <- numeric(n.sim)
+cost_s_scr_reduced_size <- numeric(n.sim)
+cost_s_scr_new_size_1 <- numeric(n.sim)
+cost_s_scr_new_size_2 <- numeric(n.sim)
+cost_s_mf <- numeric(n.sim)
+length_s_A_excluded <- numeric(n.sim)
+length_s_B_excluded <- numeric(n.sim)
 
 
 for (i in 1:n.sim)
 {
 s_scr_reduced_size <- sample_scr_reduced_size(data, 
-                                              n_A = proportional_n_screener(N=N, N_a = N_a, 
-                                                                            N_b_ab = N_b_ab, 
-                                                                            N_C = N_C, n = n)$n_a, 
-                                              n_B = proportional_n_screener(N=N, N_a = N_a, 
-                                                                            N_b_ab = N_b_ab, 
-                                                                            N_C = N_C, n = n)$n_b_ab,
-                                              n_C = proportional_n_screener(N=N, N_a = N_a, 
-                                                                            N_b_ab = N_b_ab, 
-                                                                            N_C = N_C, n = n)$n_C)
+                                              n_A = 100, 
+                                              n_B = 200,
+                                              n_C = 300)
 
 s_scr_new_size_1 <- sample_scr_new_size_1(data, 
                                           s_scr_reduced_size, 
-                                          n_A = proportional_n_screener(N=N, N_a = N_a, 
-                                                                        N_b_ab = N_b_ab, 
-                                                                        N_C = N_C, n = n)$n_a, 
-                                          n_B = proportional_n_screener(N=N, N_a = N_a, 
-                                                                        N_b_ab = N_b_ab, 
-                                                                        N_C = N_C, n = n)$n_b_ab,
-                                          n_C = proportional_n_screener(N=N, N_a = N_a, 
-                                                                        N_b_ab = N_b_ab, 
-                                                                        N_C = N_C, n = n)$n_C)
+                                          n_A = 100, 
+                                          n_B = 200,
+                                          n_C = 300)
 
 s_scr_new_size_2 <- sample_scr_new_size_2(data,
-                                          n_A = proportional_n_screener(N=N, N_a = N_a,                                     N_b_ab = N_b_ab, N_C = N_C, n = n)$n_a, 
-                                          n_B = proportional_n_screener(N=N, N_a = N_a, 
-                                                                        N_b_ab = N_b_ab, 
-                                                                        N_C = N_C, n = n)$n_b_ab,
-                                          n_C = proportional_n_screener(N=N, N_a = N_a, 
-                                                                        N_b_ab = N_b_ab, 
-                                                                        N_C = N_C, n = n)$n_C)
+                                          n_A = 100, 
+                                          n_B = 200,
+                                          n_C = 300)
 
 s_mf <- sample_mf(data,
-                  n_A = proportional_n_mf(N=N, N_A = N_A, N_B = N_B, N_C = N_C, n = n)$n_A, 
-                  n_B = proportional_n_mf(N=N, N_A = N_A, N_B = N_B, N_C = N_C, n = n)$n_B,
-                  n_C = proportional_n_mf(N=N, N_A = N_A, N_B = N_B, N_C = N_C, n = n)$n_C)
+                  n_A = 100, 
+                  n_B = 200,
+                  n_C = 300)
 
+# number of rejections
+length_s_A_excluded[i] <- nrow(s_scr_reduced_size$s_A_excluded)
+length_s_B_excluded[i] <- nrow(s_scr_reduced_size$s_B_excluded)
 
 # costs
 # ampiezza campionaria di fatto dimezzata con metodo reduced_size
-cost(s_scr_reduced_size)
-cost(s_scr_new_size_1)
-cost(s_scr_new_size_2)
-cost(s_mf)
-
+cost_s_scr_reduced_size[i] <- cost(s_scr_reduced_size)
+cost_s_scr_new_size_1[i] <- cost(s_scr_new_size_1)
+cost_s_scr_new_size_2[i] <- cost(s_scr_new_size_2)
+cost_s_mf[i] <- cost(s_mf)
 
 # estimators
-res_mf_m[i] <- est_mf_multiplicity(s_mf)
-res_mf_ka[i] <- est_mf_ka(s_mf, N_A = N_A, N_B = N_B, N_C=N_C)
-res_strat_reduced[i] <- est_strat(s_scr_reduced_size)
-res_strat_new_size_1[i] <- est_strat(s_scr_new_size_1)
-res_strat_new_size_2[i] <- est_strat(s_scr_new_size_2)
+res_mf_m[i] <- est_mf_multiplicity(s_mf, N_A = N_A, N_B = N_B, N_C=N_C)
+res_mf_ka[i] <- est_mf_ka(s_mf, N_A = N_A, N_B = N_B, N_C = N_C)
+res_strat_reduced[i] <- est_strat(s_scr_reduced_size, N_a = N_a, N_b_ab = N_b_ab, N_C = N_C)
+res_strat_new_size_1[i] <- est_strat(s_scr_new_size_1, N_a = N_a, N_b_ab = N_b_ab, N_C = N_C)
+res_strat_new_size_2[i] <- est_strat(s_scr_new_size_2, N_a = N_a, N_b_ab = N_b_ab, N_C = N_C)
 }
 
-par(mfrow = c(1, 5))
-boxplot(res_mf_m)
-boxplot(res_mf_ka)
-boxplot(res_strat_reduced)
-boxplot(res_strat_new_size_1)
-boxplot(res_strat_new_size_2)
+boxplot(data.frame(res_mf_m, res_mf_ka, res_strat_reduced, res_strat_new_size_1, res_strat_new_size_2))
+
+data.frame(res_mf_m, res_strat_reduced, res_strat_new_size_1, res_strat_new_size_2) %>% 
+  summarise(sd(res_mf_m), sd(res_mf_ka), sd(res_strat_reduced), sd(res_strat_new_size_1), sd(res_strat_new_size_2))
+
+data.frame(cost_s_scr_reduced_size,
+           cost_s_scr_new_size_1,
+           cost_s_scr_new_size_2,
+           cost_s_mf) %>% 
+  summarise(mean(cost_s_mf), mean(cost_s_scr_reduced_size), mean(cost_s_scr_new_size_1), mean(cost_s_scr_new_size_2))
+
+data.frame(length_s_A_excluded,
+           length_s_B_excluded) %>% 
+  summarise(min(length_s_A_excluded), 
+            min(length_s_B_excluded),
+            median(length_s_A_excluded), 
+            median(length_s_B_excluded),
+            mean(length_s_A_excluded), 
+            mean(length_s_B_excluded),
+            max(length_s_A_excluded), 
+            max(length_s_B_excluded))
+
+data %>% group_by(domain) %>% summarise(sd(Y))
+data %>% group_by(domain) %>% summarise(mean(Y))
+data %>% filter(A == 1) %>% summarise(mean(Y), sd(Y), cv = sd(Y)/mean(Y))
+data %>% filter(B == 1) %>% summarise(mean(Y), sd(Y), cv = sd(Y)/mean(Y))
+data %>% filter(C == 1) %>% summarise(mean(Y), sd(Y), cv = sd(Y)/mean(Y))
+
+(var_mf_multiplicity(data, n_A = 100, n_B = 200, n_C = 300) - var(res_mf_m))/var_mf_multiplicity(data, n_A = 100, n_B = 200, n_C = 300)*100
 
