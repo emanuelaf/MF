@@ -1,0 +1,13 @@
+TODO
+
+1. FIX FRAMES VARIABILITY: the differentials in variability within frames is built by sampling from normal distributions with DOMAIN SPECIFIC variances -> this makes it harder to control the frame variability and does not allow for differentials as large as we wish.
+
+2. each estimator is calculated on a different sample -> rerun the simulation by fixing this
+
+3. ESTIMATORS VARIANCE
+ 	- understand why the multiplicity estimator's variance is lower than that of KA
+ 	- understand why the multiplicty estimator's variance and the KA variance are much higher than the stratified estimators
+ 	
+ 
+ 4. SAMPLE SIZE CHOICE:
+ 	- add sample size optimising variance and costs (Lohr and Brick 2014)
