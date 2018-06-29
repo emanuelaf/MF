@@ -7,6 +7,12 @@ data <- generate_pop(mu_domains = c(30, 30, 30, 30, 30, 30, 30),
                      sd_domains = c(0.2, 0.2, 10, 0.2, 10, 10, 10),
                      frame_cost = c(6, 3, 1))
 
+data %>% group_by(domain) %>% summarise(sd(Y))
+data %>% group_by(domain) %>% summarise(mean(Y))
+data %>% filter(A == 1) %>% summarise(mean_A = mean(Y), sd_A = sd(Y), cv_A = sd(Y)/mean(Y))
+data %>% filter(B == 1) %>% summarise(mean_B =mean(Y), sd_B = sd(Y), cv_B = sd(Y)/mean(Y))
+data %>% filter(C == 1) %>% summarise(mean_C = mean(Y), sd_C = sd(Y), cv_C = sd(Y)/mean(Y))
+
 n <- 600
 
 N <- nrow(data)
@@ -20,7 +26,7 @@ N_B <- data %>% filter(domain == "b" | domain == "ab" | domain == "bc" | domain 
 
 # sample
 
-n.sim <- 2000
+n.sim <- 1000
 
 res_mf_m <- numeric(n.sim)
 res_mf_ka <- numeric(n.sim)
@@ -77,6 +83,7 @@ res_strat_new_size_1[i] <- est_strat(s_scr_new_size_1, N_a = N_a, N_b_ab = N_b_a
 res_strat_new_size_2[i] <- est_strat(s_scr_new_size_2, N_a = N_a, N_b_ab = N_b_ab, N_C = N_C)
 }
 
+# risultati in boxplot
 boxplot(data.frame(res_mf_m, res_mf_ka, res_strat_reduced, res_strat_new_size_1, res_strat_new_size_2))
 
 data.frame(res_mf_m, res_strat_reduced, res_strat_new_size_1, res_strat_new_size_2) %>% 
@@ -98,12 +105,6 @@ data.frame(length_s_A_excluded,
             mean(length_s_B_excluded),
             max(length_s_A_excluded), 
             max(length_s_B_excluded))
-
-data %>% group_by(domain) %>% summarise(sd(Y))
-data %>% group_by(domain) %>% summarise(mean(Y))
-data %>% filter(A == 1) %>% summarise(mean(Y), sd(Y), cv = sd(Y)/mean(Y))
-data %>% filter(B == 1) %>% summarise(mean(Y), sd(Y), cv = sd(Y)/mean(Y))
-data %>% filter(C == 1) %>% summarise(mean(Y), sd(Y), cv = sd(Y)/mean(Y))
 
 (var_mf_multiplicity(data, n_A = 100, n_B = 200, n_C = 300) - var(res_mf_m))/var_mf_multiplicity(data, n_A = 100, n_B = 200, n_C = 300)*100
 
