@@ -8,6 +8,7 @@ require(dplyr)
 generate_pop <- function(mu_domains, sd_domains, frame_cost) {
   N <- 70000
   
+  # modify overlap here
   A <- c(rep(1, 40000), rep(0, 30000))
   B <- c(rep(0, 10000), rep(1, 10000), rep(0, 10000), rep(1, 30000), rep(0, 10000))
   C <- c(rep(0, 20000), rep(1, 30000), rep(0, 10000), rep(1, 10000))
@@ -92,8 +93,6 @@ sample_scr_new_size_1 <- function(data, s_scr_reduced_size, n_A, n_B, n_C) {
   return(results)
 }
 
-
-
 # units reallocated only in less expensive frame, that here coincides with the last one
 sample_scr_new_size_2 <- function(data, n_A, n_B, n_C) {
   n <- n_A + n_B + n_C
@@ -143,13 +142,13 @@ cost <- function(s_scr_reduced_size, contact_cost = 0.1) {
 
 # Screener design: stratified estimator
 est_strat <- function(s, N_a, N_b_ab, N_C) {
-  n_A <- nrow(s$s_A_final)
-  n_B <- nrow(s$s_B_final)
+  n_a <- nrow(s$s_A_final)
+  n_b_ab <- nrow(s$s_B_final)
   n_C <- nrow(s$s_C_final) 
-  hat_Y_A <- ifelse(n_A != 0, as.numeric((s$s_A_final %>% summarise(sum(Y)))), 0)
-  hat_Y_B <- ifelse(n_B != 0, as.numeric((s$s_B_final %>% summarise(sum(Y)))), 0)
+  hat_Y_a <- ifelse(n_A != 0, as.numeric((s$s_A_final %>% summarise(sum(Y)))), 0)
+  hat_Y_b_ab <- ifelse(n_B != 0, as.numeric((s$s_B_final %>% summarise(sum(Y)))), 0)
   hat_Y_C <- as.numeric((s$s_C_final %>% summarise(sum(Y))))
-  hat_Y_str <- hat_Y_A*(N_a/n_A) + hat_Y_B * (N_b_ab/n_B) + hat_Y_C * (N_C/n_C)
+  hat_Y_str <- hat_Y_a*(N_a/n_a) + hat_Y_b_ab * (N_b_ab/n_b_ab) + hat_Y_C * (N_C/n_C)
   return(hat_Y_str)
 }
 
