@@ -7,6 +7,7 @@ data <- generate_pop(mu_domains = c(30, 30, 30, 30, 30, 30, 30),
                      sd_domains = c(0.2, 0.2, 10, 0.2, 10, 10, 10),
                      frame_cost = c(6, 3, 1))
 
+# print frame specific statistics
 data %>% group_by(domain) %>% summarise(sd(Y))
 data %>% group_by(domain) %>% summarise(mean(Y))
 data %>% filter(A == 1) %>% summarise(mean_A = mean(Y), sd_A = sd(Y), cv_A = sd(Y)/mean(Y))
@@ -59,10 +60,7 @@ s_scr_new_size_2 <- sample_scr_new_size_2(data,
                                           n_B = 200,
                                           n_C = 300)
 
-s_mf <- sample_mf(data,
-                  n_A = 100, 
-                  n_B = 200,
-                  n_C = 300)
+s_mf <- s_scr_reduced_size
 
 # number of rejections
 length_s_A_excluded[i] <- nrow(s_scr_reduced_size$s_A_excluded)
@@ -76,6 +74,10 @@ cost_s_scr_new_size_2[i] <- cost(s_scr_new_size_2)
 cost_s_mf[i] <- cost(s_mf)
 
 # estimators
+s_mf$s_A_final <- s_scr_reduced_size$s_A_initial
+s_mf$s_B_final <- s_scr_reduced_size$s_B_initial
+s_mf$s_C_final <- s_scr_reduced_size$s_C_initial
+
 res_mf_m[i] <- est_mf_multiplicity(s_mf, N_A = N_A, N_B = N_B, N_C=N_C)
 res_mf_ka[i] <- est_mf_ka(s_mf, N_A = N_A, N_B = N_B, N_C = N_C)
 res_strat_reduced[i] <- est_strat(s_scr_reduced_size, N_a = N_a, N_b_ab = N_b_ab, N_C = N_C)
