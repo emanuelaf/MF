@@ -9,11 +9,11 @@ TODO
  	
  
  4. SAMPLE SIZE CHOICE:
- 	- add sample size optimising Hartley's variance in overlp design (Lohr and Brick 2014)
- 	- add sample size ptimising variance in screener design
+ 	- add sample size optimising Hartley's variance in overlp design (Lohr and Brick 2014) --> non riesco con loro formula!
+ 	- add sample size optimising variance in screener design --> fatto credo!
  	
 
 5. ESITMATOR FOR OVERALP DESIGN:
-	- add Hartley estimator for three frames
+	- add Hartley estimator for three frames --> non riesco in 3 frames!
 
 
