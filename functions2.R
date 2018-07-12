@@ -245,5 +245,32 @@ proportional_n_mf <- function(N, N_A, N_B, N_C, n) {
 }
 
 
-# optimal (with respect to variance)
+# optimal sample size allocation (with respect to variance)
 
+# first we need multiplicity adjucted frame variance
+sigma_alpha_values <- function(data, N_A, N_B, N_C) {
+  data <- data %>% mutate(m = A + B + C)
+  data_A <- data %>% filter(A == 1) 
+  data_B <- data %>% filter(B == 1)
+  data_C <- data %>% filter(C == 1)
+  sigma_alpha_A <- mean(data_A$Y^2/data_A$m^2) - (mean(data_A$Y/data_A$m))^2
+  sigma_alpha_B <- mean(data_B$Y^2/data_B$m^2) - (mean(data_B$Y/data_B$m))^2
+  sigma_alpha_C <- mean(data_C$Y^2/data_C$m^2) - (mean(data_C$Y/data_C$m))^2
+  return(sigma_alpha = list(sigma_alpha_A = sigma_alpha_A, sigma_alpha_B = sigma_alpha_B,
+                            sigma_alpha_C = sigma_alpha_C))
+}
+
+
+# second we calculate the optimal sample size for each frame
+optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, sigma_alpha) {
+  n_A <- ((C-c_0)*N_A*sqrt(N_A/(N_A-1))*sigma_alpha[["A"]])
+  n_B <- ((C-c_0)*N_B*sqrt(N_B/(N_B-1))*sigma_alpha[["B"]])
+  n_C <- ((C-c_0)*N_C*sqrt(N_C/(N_C-1))*sigma_alpha[["C"]])
+  n <- n_A + n_B + n_C
+  n_results <- list(n_A = n_A, n_B = n_B, n_C = n_C, n = n)
+  return(n_results)
+}  
+
+  
+  
+  
