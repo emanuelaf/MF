@@ -1,7 +1,7 @@
 rm(list=ls())
 
 source("functions2.R")
-set.seed(1)
+set.seed(22)
 
 data <- generate_pop(mu_domains = c(30, 30, 30, 30, 30, 30, 30), 
                      sd_domains = c(0.2, 0.2, 10, 0.2, 10, 10, 10),
@@ -14,7 +14,7 @@ data %>% filter(A == 1) %>% summarise(mean_A = mean(Y), sd_A = sd(Y), cv_A = sd(
 data %>% filter(B == 1) %>% summarise(mean_B =mean(Y), sd_B = sd(Y), cv_B = sd(Y)/mean(Y))
 data %>% filter(C == 1) %>% summarise(mean_C = mean(Y), sd_C = sd(Y), cv_C = sd(Y)/mean(Y))
 
-n <- 600
+n <- 900
 
 N <- nrow(data)
 
@@ -27,7 +27,7 @@ N_B <- data %>% filter(domain == "b" | domain == "ab" | domain == "bc" | domain 
 
 # sample
 
-n.sim <- 1000
+n.sim <- 5000
 
 res_mf_m <- numeric(n.sim)
 res_mf_ka <- numeric(n.sim)
@@ -112,5 +112,6 @@ data.frame(length_s_A_excluded,
             max(length_s_A_excluded), 
             max(length_s_B_excluded))
 
-(var_mf_multiplicity(data, n_A = 100, n_B = 200, n_C = 300) - var(res_mf_m))/var_mf_multiplicity(data, n_A = 100, n_B = 200, n_C = 300)*100
+(var_mf_multiplicity(data, n_A = n$n_A, n_B = n$n_B, n_C = n$n_C) - var(res_mf_m))/
+  var_mf_multiplicity(data, n_A = n$n_A, n_B = n$n_B, n_C = n$n_C)*100
 
