@@ -235,6 +235,32 @@ proportional_n_screener <- function(N, N_a, N_b_ab, N_C, n) {
   return(list(n_a = n_a, n_b_ab = n_b_ab, n_C = n_C))
 }
 
+
+## optimal allocation in stratified/screener design
+# first we need to calculate variances
+sigma2_strata <- function(data, N_A, N_B, N_C) {
+  data_a <- data %>% filter(A == 1 & B == 0 & C == 0) 
+  data_ab_b <- data %>% filter((A == 1 & B == 1 & C == 0) | (A == 0 & B == 1 & C == 0))
+  data_C <- data %>% filter(C == 1)
+  sigma2_a <- var(data_a$Y)
+  sigma2_ab_b <- var(data_ab_b$Y)
+  sigma2_C <- var(data_C$Y)
+  return(sigma2 = list(sigma2_a = sigma2_a, sigma2_ab_b = sigma2_ab_b,
+                       sigma2_C = sigma2_C))
+}
+
+# second we can calculate the optimal sample size
+optimal_n_screener <- function(N, N_a, N_A, N_b_ab, N_B, N_C, c_a, c_b_ab, c_C, C, sigma2) {
+  V_a <- N_a*N_A*sigma2[["sigma2_a"]]
+  V_b_ab <- N_b_ab*N_B*sigma2[["sigma2_ab_b"]]
+  V_C <- N_C^2*sigma2[["sigma2_C"]]
+  n_a <- C*(sqrt(V_a/c_a)/(sqrt(V_a*c_a) + sqrt(V_b_ab*c_b_ab) + sqrt(V_C/c_C))) 
+  n_b_ab <- C*(sqrt(V_b_ab/c_b_ab)/(sqrt(V_a*c_a) + sqrt(V_b_ab*c_b_ab) + sqrt(V_C/c_C)))
+  n_C <- C*(sqrt(V_C/c_C)/(sqrt(V_a*c_a) + sqrt(V_b_ab*c_b_ab) + sqrt(V_C/c_C)))
+  return(list(n_a = n_a, n_b_ab = n_b_ab, n_C = n_C))
+}
+
+
 ## proportional allocation in mf
 
 proportional_n_mf <- function(N, N_A, N_B, N_C, n) {
