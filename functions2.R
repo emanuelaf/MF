@@ -279,6 +279,7 @@ optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, sigma2_alpha) {
   return(n_results)
 }  
 
+
 n_size <- function(type = "proportional", N, N_A, N_B, N_C, C, c_0, c_A, c_B, c_C, sigma2_alpha, n) {
   switch(type,
          proportional = proportional_n_mf(N, N_A, N_B, N_C, n),
