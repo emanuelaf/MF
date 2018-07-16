@@ -307,10 +307,10 @@ optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha) {
 
 
 n_size <- function(type = "proportional", N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha, n) {
-  switch(type,
-         proportional = proportional_n_mf(N, N_A, N_B, N_C, n),
-         optimal_eq_mecatti = optimal_n_mf(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha),
-         # non sono sicura sia utile implementarla, al momento non l'ho implementata
-         optimal_eq_lohr = optimal_n_mf2(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha)) 
+  switch(
+    type,
+    proportional = proportional_n_mf(N, N_A, N_B, N_C, n),
+    optimal = optimal_n_mf(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha)
+    )
 }
 
