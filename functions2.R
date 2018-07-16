@@ -287,8 +287,8 @@ sigma_alpha_values <- function(data, N_A, N_B, N_C) {
 }
 
 
-# second, we calculate the optimal sample size for each frame: equation (22), draft Mecatti
-optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, sigma2_alpha) {
+# second, we calculate the optimal sample size for each frame: equation (22) corretta, draft Mecatti
+optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha) {
   
   n_q_opt_denominator <- (N_A*sqrt((N_A/(N_A-1))*sigma2_alpha[["sigma2_alpha_A"]])) +
                          (N_B*sqrt((N_B/(N_B-1))*sigma2_alpha[["sigma2_alpha_B"]])) +
@@ -296,9 +296,9 @@ optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, sigma2_alpha) {
   
   # (C_c_0) that multiplies everything actually translates into the total sample size n... è necessario? non è meglio
   # metterci n totale allora?
-  n_A_opt <- ((C-c_0)*(N_A*sqrt((N_A/(N_A-1))*sigma2_alpha[["sigma2_alpha_A"]])))/n_q_opt_denominator
-  n_B_opt <- ((C-c_0)*(N_B*sqrt((N_B/(N_B-1))*sigma2_alpha[["sigma2_alpha_B"]])))/n_q_opt_denominator
-  n_C_opt <- ((C-c_0)*(N_C*sqrt((N_C/(N_C-1))*sigma2_alpha[["sigma2_alpha_C"]])))/n_q_opt_denominator
+  n_A_opt <- ((C-c_0)*(N_A*sqrt((N_A/(N_A-1))*sigma2_alpha[["sigma2_alpha_A"]]))/sqrt(cost_frames[1]))/n_q_opt_denominator
+  n_B_opt <- ((C-c_0)*(N_B*sqrt((N_B/(N_B-1))*sigma2_alpha[["sigma2_alpha_B"]]))/sqrt(cost_frames[2]))/n_q_opt_denominator
+  n_C_opt <- ((C-c_0)*(N_C*sqrt((N_C/(N_C-1))*sigma2_alpha[["sigma2_alpha_C"]]))/sqrt(cost_frames[3]))/n_q_opt_denominator
   n <- n_A_opt + n_B_opt + n_C_opt
   
   n_results <- list(n_A = n_A_opt, n_B = n_B_opt, n_C = n_C_opt, n = n)
@@ -306,10 +306,10 @@ optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, sigma2_alpha) {
 }  
 
 
-n_size <- function(type = "proportional", N, N_A, N_B, N_C, C, c_0, c_A, c_B, c_C, sigma2_alpha, n) {
+n_size <- function(type = "proportional", N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha, n) {
   switch(type,
          proportional = proportional_n_mf(N, N_A, N_B, N_C, n),
-         optimal_eq_mecatti = optimal_n_mf(N, N_A, N_B, N_C, C, c_0, sigma2_alpha),
-         optimal_eq_lohr = optimal_n_mf2(N, N_A, N_B, N_C, C, c_0, sigma2_alpha))
+         optimal_eq_mecatti = optimal_n_mf(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha),
+         optimal_eq_lohr = optimal_n_mf2(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha))
 }
 

@@ -27,7 +27,7 @@ N_B <- data %>% filter(domain == "b" | domain == "ab" | domain == "bc" | domain 
 
 # sample
 
-n.sim <- 5000
+n.sim <- 1000
 
 res_mf_m <- numeric(n.sim)
 res_mf_ka <- numeric(n.sim)
@@ -38,6 +38,7 @@ cost_s_scr_reduced_size <- numeric(n.sim)
 cost_s_scr_new_size_1 <- numeric(n.sim)
 cost_s_scr_new_size_2 <- numeric(n.sim)
 cost_s_mf <- numeric(n.sim)
+cost_frame <- c(10, 5, 2)
 length_s_A_excluded <- numeric(n.sim)
 length_s_B_excluded <- numeric(n.sim)
 
@@ -46,8 +47,8 @@ for (i in 1:n.sim)
 {
 # sample size allocation
   sigma2_alpha <- sigma_alpha_values(data = data, N_A = N_A, N_B = N_B, N_C = N_C)
-  n <- n_size(type = "optimal", N = N, N_A = N_A, N_B = N_B, N_C = N_C, C = 1000, 
-              c_0 = 100, sigma2_alpha = sigma2_alpha, n = 900)
+  n <- n_size(type = "optimal_eq_mecatti", N = N, N_A = N_A, N_B = N_B, N_C = N_C, C = 1000, 
+              c_0 = 100, sigma2_alpha = sigma2_alpha, n = 900, cost_frame = cost_frame)
 
   s_scr_reduced_size <- sample_scr_reduced_size(data, 
                                               n_A = n$n_A, 
