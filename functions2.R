@@ -153,7 +153,7 @@ est_strat <- function(s, N_a, N_b_ab, N_C) {
 }
 
 
-# multiple frame design: multiplicity
+# multiple frame design: multiplicity estimator
 est_mf_multiplicity <- function(s_mf, N_A, N_B, N_C) {
   hat_Y_m <- ((s_mf$s_A_final %>% filter( domain == "a") %>%  summarise(sum(Y))) +
                  (s_mf$s_A_final %>% filter( domain == "ab") %>% summarise(sum(Y)))/2 +
@@ -171,6 +171,7 @@ est_mf_multiplicity <- function(s_mf, N_A, N_B, N_C) {
   return(hat_Y_m = as.numeric(hat_Y_m))
 }
 
+# exact variance of multiplicity estimator
 var_mf_multiplicity <- function(data, n_A, n_B, n_C) {
   data <- data %>% mutate(m = A + B + C)
   data_A <- data %>% filter(A == 1) 
@@ -184,7 +185,7 @@ var_mf_multiplicity <- function(data, n_A, n_B, n_C) {
 }
 
 
-# multiple frame design: KA - coincide con multilicity quando probabilità di inclusione è n_q/N_q
+# multiple frame design: KA estimator - coincide con multilicity quando probabilità di inclusione è n_q/N_q
 est_mf_ka <- function(s_mf, N_A, N_B, N_C) {
   n_A <- nrow(s_mf$s_A_final)
   n_B <- nrow(s_mf$s_B_final)
@@ -218,16 +219,17 @@ est_mf_ka <- function(s_mf, N_A, N_B, N_C) {
 }
 
 
+# exact variance of kalton anderson estimator
 var_mf_ka <- function(data, n_A, n_B, n_C) {
 }
 
 
 
-### CALCULATING SAMPLE SIZE
+### SAMPLE SIZE CALCULATION
 
 
+## 1) PROPORTIONAL
 ## proportional allocation in stratified/screener design
-
 proportional_n_screener <- function(N, N_a, N_b_ab, N_C, n) {
   n_a <- ceiling((N_a/N)*n)
   n_b_ab <- ceiling((N_b_ab/N)*n)
@@ -236,8 +238,20 @@ proportional_n_screener <- function(N, N_a, N_b_ab, N_C, n) {
 }
 
 
+## proportional allocation in mf
+proportional_n_mf <- function(N, N_A, N_B, N_C, n) {
+  n_A <- ceiling((N_A/(N_A+N_B+N_C))*n)
+  n_B <- ceiling((N_B/(N_A+N_B+N_C))*n)
+  n_C <- n - (n_A + n_B)
+  return(list(n_A = n_A, n_B = n_B, n_C = n_C))
+}
+
+
+## OPTIMAL SAMPLE SIZE ALLOCATION (MINIMIZE ESTIMATOR VARIABILITY)
+
 ## optimal allocation in stratified/screener design
-# first we need to calculate variances
+# first we need to calculate variances: this function is only useful for finding
+# strata variances to be included in the optimal allocation calculation
 sigma2_strata <- function(data, N_A, N_B, N_C) {
   data_a <- data %>% filter(A == 1 & B == 0 & C == 0) 
   data_ab_b <- data %>% filter((A == 1 & B == 1 & C == 0) | (A == 0 & B == 1 & C == 0))
@@ -250,6 +264,7 @@ sigma2_strata <- function(data, N_A, N_B, N_C) {
 }
 
 # second we can calculate the optimal sample size
+# this function returns the sample size to be allocated in each strata
 optimal_n_screener <- function(N, N_a, N_A, N_b_ab, N_B, N_C, c_a, c_b_ab, c_C, C, sigma2) {
   V_a <- N_a*N_A*sigma2[["sigma2_a"]]
   V_b_ab <- N_b_ab*N_B*sigma2[["sigma2_ab_b"]]
@@ -260,20 +275,10 @@ optimal_n_screener <- function(N, N_a, N_A, N_b_ab, N_B, N_C, c_a, c_b_ab, c_C, 
   return(list(n_a = n_a, n_b_ab = n_b_ab, n_C = n_C))
 }
 
-
-## proportional allocation in mf
-
-proportional_n_mf <- function(N, N_A, N_B, N_C, n) {
-  n_A <- ceiling((N_A/(N_A+N_B+N_C))*n)
-  n_B <- ceiling((N_B/(N_A+N_B+N_C))*n)
-  n_C <- n - (n_A + n_B)
-  return(list(n_A = n_A, n_B = n_B, n_C = n_C))
-}
-
-
-## optimal sample size allocation (with respect to variance)
-
+## optimal sample size allocation in overlap design
 # first, we need multiplicity adjusted frame variance: I am calculating exact vars
+# this function is only useful for finding frames variances to be included in the optimal allocation calculation
+
 sigma_alpha_values <- function(data, N_A, N_B, N_C) {
   data <- data %>% mutate(m = A + B + C)
   data_A <- data %>% filter(A == 1) 
@@ -285,7 +290,6 @@ sigma_alpha_values <- function(data, N_A, N_B, N_C) {
   return(sigma2_alpha = list(sigma2_alpha_A = sigma2_alpha_A, sigma2_alpha_B = sigma2_alpha_B,
                             sigma2_alpha_C = sigma2_alpha_C))
 }
-
 
 # second, we calculate the optimal sample size for each frame: equation (22) corretta, draft Mecatti
 optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha) {
@@ -306,6 +310,8 @@ optimal_n_mf <- function(N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha) {
 }  
 
 
+# if we choose type = proportional, the functions that calculate proprtional allocation are used
+# if we choose optimal allocation, the functions for optimal allocation are used
 n_size <- function(type = "proportional", N, N_A, N_B, N_C, C, c_0, cost_frames, sigma2_alpha, n) {
   switch(
     type,
