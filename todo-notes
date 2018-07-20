@@ -9,11 +9,10 @@ TODO
  	
  
  4. SAMPLE SIZE CHOICE:
- 	- add sample size optimising MF as in equation 22 in draft Mecatti --> fatto, credo!
- 	- add sample size optimising Hartley's variance in overlp design (Lohr and Brick 2014) --> uguale a draft Mecatti equation 22
+ 	- add sample size optimising MF as in equation 22 in draft Mecatti (opportunamente corretta) --> fatto, credo!
  	- add sample size optimising variance in screener design --> fatto credo!
 
 5. ESITMATOR FOR OVERALP DESIGN:
-	- add Hartley estimator for three frames --> non riesco in 3 frames!
+	- add Hartley estimator for three frames --> seguire formula 17 e 18 in Mecatti and Singh 2014, non ancora fatto
 
 
