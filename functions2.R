@@ -219,10 +219,14 @@ est_mf_ka <- function(s_mf, N_A, N_B, N_C) {
 }
 
 
-# exact variance of kalton anderson estimator
+# exact variance of kalton anderson estimator: NOT YET IMPLEMENTED
 var_mf_ka <- function(data, n_A, n_B, n_C) {
 }
 
+
+# Hartley estimator for three frames: NOT YET IMPLEMENTED
+# to be implemented following equation 18 and 17 in Mecatti and Singh 2014
+# est_mf_h
 
 
 ### SAMPLE SIZE CALCULATION
