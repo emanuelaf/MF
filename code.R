@@ -11,7 +11,7 @@ data <- generate_pop(mu_domains = c(30, 30, 30, 30, 30, 30, 30),
 data %>% group_by(domain) %>% summarise(sd(Y))
 data %>% group_by(domain) %>% summarise(mean(Y))
 data %>% filter(A == 1) %>% summarise(mean_A = mean(Y), sd_A = sd(Y), cv_A = sd(Y)/mean(Y))
-data %>% filter(B == 1) %>% summarise(mean_B =mean(Y), sd_B = sd(Y), cv_B = sd(Y)/mean(Y))
+data %>% filter(B == 1) %>% summarise(mean_B = mean(Y), sd_B = sd(Y), cv_B = sd(Y)/mean(Y))
 data %>% filter(C == 1) %>% summarise(mean_C = mean(Y), sd_C = sd(Y), cv_C = sd(Y)/mean(Y))
 
 n <- 900
