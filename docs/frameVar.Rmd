@@ -1,0 +1,55 @@
+---
+title: "Variance of a Mixture of distributions"
+author: "Marco Gramatica"
+date: "1 August 2018"
+header-includes:
+   - \usepackage{hyperref}
+output: pdf_document
+---
+
+# Formula
+
+```{r, echo = F, message = F}
+formula_var <- function(pop_d, mu_domains, sd_domains){
+    pop_d <- pop_d/sum(pop_d)
+  result <- pop_d%*%(sd_domains^2) + 
+    (pop_d%*%(mu_domains^2) - (pop_d%*%mu_domains)^2)
+  return(as.numeric(result))
+}
+
+# Domain order:
+# a - b - c - ab - bc - ac - abc
+
+frame_sd <- function(pop_d, mu_domains, sd_domains){
+  pos_select <- list(c(1, 4, 6:7), # Frame A
+                     c(2, 4:5, 7), # Frame B
+                     c(3, 5:7)) # Frame C
+  lapply(pos_select, 
+        function(x) sqrt(formula_var(pop_d = pop_d[x],
+                                 mu_domains = mu_domains[x],
+                                 sd_domains = sd_domains[x])))
+}
+```
+
+Obtained from the Stack Exchange question: \href{https://stats.stackexchange.com/questions/16608/what-is-the-variance-of-the-weighted-mixture-of-two-gaussians}{What is the variance of the weighted mixture of two gaussians?} (click on the question)
+
+\section{Formula}
+Let $X_i$ with $i = 1, ..., n$ be independent random variables each with mean $\mu_i$ and variance $\sigma^2_i$.
+
+Therefore the variance of $Y = \sum_{i=1}^{n} p_i X_i$, with $\sum_i  p_i = 1$ and$\forall p_i>0$ will be
+$$Var(Y) = \sum_{i=1}^{n} p_i \sigma_i^2 + \left[\sum_{i=1}^{n} p_i \mu_i^2 
+	 - \left(\sum_{i=1}^{n} p_i \mu_i\right)^2 \right]$$
+
+$Y$ is basically a weighted linear combination of independent random variables.
+
+# Toy example
+
+```{r}
+# Domain order:
+# a - b - c - ab - bc - ac - abc
+n_doms <- c(rep(1e3, 3), 1e2, 2e3, 4e2, 1e2) # Population of each domain
+mu_s <- c(rep(5, 3), 4, 3, 1, 1) # Means
+sd_s <- c(rep(9, 3), 4, 5, 6, 6) # Standard deviations
+frame_sd (pop_d = n_doms, mu_domains = mu_s, sd_domains = sd_s)
+```
+
