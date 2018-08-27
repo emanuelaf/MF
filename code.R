@@ -3,8 +3,12 @@ rm(list=ls())
 source("functions2.R")
 set.seed(22)
 
-data <- generate_pop(mu_domains = c(30, 30, 30, 30, 30, 30, 30), 
-                     sd_domains = c(0.2, 0.2, 10, 0.2, 10, 10, 10),
+frame_sd(pop_d = c(10000, 10000, 10000, 10000, 10000, 10000, 10000),
+         mu_domains = c(10,10,10,10,10,10,10), sd_domains = c(0.1,0.1,5,0.1,0.1,5,5))
+
+
+data <- generate_pop(mu_domains = c(10,10,10,10,10,10,10), 
+                     sd_domains = c(0.1,0.1,5,0.1,0.1,5,5),
                      frame_cost = c(6, 3, 1))
 
 # print frame specific statistics
