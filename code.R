@@ -3,10 +3,11 @@ rm(list=ls())
 source("functions2.R")
 set.seed(22)
 
+# play with params a bit to find a good variance differential
 frame_sd(pop_d = c(10000, 10000, 10000, 10000, 10000, 10000, 10000),
          mu_domains = c(10,10,10,10,10,10,10), sd_domains = c(0.1,0.1,5,0.1,0.1,5,5))
 
-
+# use the chosen params combination
 data <- generate_pop(mu_domains = c(10,10,10,10,10,10,10), 
                      sd_domains = c(0.1,0.1,5,0.1,0.1,5,5),
                      frame_cost = c(6, 3, 1))
