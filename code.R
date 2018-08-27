@@ -32,7 +32,7 @@ N_B <- data %>% filter(domain == "b" | domain == "ab" | domain == "bc" | domain 
 
 # sample
 
-n.sim <- 1000
+n.sim <- 10000
 
 res_mf_m <- numeric(n.sim)
 res_mf_ka <- numeric(n.sim)
