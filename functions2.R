@@ -80,10 +80,10 @@ frame_sd <- function(pop_d, mu_domains, sd_domains){
 }
 
 # Toy example to fine tune the sd of each frame
-n_doms <- c(rep(1e3, 3), 1e2, 2e3, 4e2, 1e2) # Population of each domain
-mu_s <- c(rep(5, 3), 4, 3, 1, 1) # Means
-sd_s <- c(rep(9, 3), 4, 5, 6, 6) # Standard deviations
-frame_sd (pop_d = n_doms, mu_domains = mu_s, sd_domains = sd_s)
+# n_doms <- c(rep(1e3, 3), 1e2, 2e3, 4e2, 1e2) # Population of each domain
+# mu_s <- c(rep(5, 3), 4, 3, 1, 1) # Means
+# sd_s <- c(rep(9, 3), 4, 5, 6, 6) # Standard deviations
+# frame_sd (pop_d = n_doms, mu_domains = mu_s, sd_domains = sd_s)
   
 ### SCREENER DESIGN
 
