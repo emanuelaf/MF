@@ -47,7 +47,7 @@ for (i in 1:n.sim)
 {
 # sample size allocation
   sigma2_alpha <- sigma_alpha_values(data = data, N_A = N_A, N_B = N_B, N_C = N_C)
-  n <- n_size(type = "optimal_eq_mecatti", N = N, N_A = N_A, N_B = N_B, N_C = N_C, C = 1000, 
+  n <- n_size(type = "optimal", N = N, N_A = N_A, N_B = N_B, N_C = N_C, C = 1000, 
               c_0 = 100, sigma2_alpha = sigma2_alpha, n = 900, cost_frame = cost_frame)
 
   s_scr_reduced_size <- sample_scr_reduced_size(data, 
