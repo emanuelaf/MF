@@ -4,12 +4,14 @@ source("functions2.R")
 set.seed(22)
 
 # play with params a bit to find a good variance differential
-frame_sd(pop_d = c(10000, 10000, 10000, 10000, 10000, 10000, 10000),
-         mu_domains = c(10,10,10,10,10,10,10), sd_domains = c(0.1,0.1,5,0.1,0.1,5,5))
+#frame_sd(pop_d = c(10000, 10000, 10000, 10000, 10000, 10000, 10000),
+#         mu_domains = c(10,10,10,10,10,10,10), sd_domains = c(0.1,0.1,5,0.1,0.1,5,5))
 
 # use the chosen params combination
-data <- generate_pop(mu_domains = c(10,10,10,10,10,10,10), 
-                     sd_domains = c(0.1,0.1,5,0.1,0.1,5,5),
+data <- generate_pop(N = 60000,
+                     mu_domains = c(0,0,0,0,0,0,0), 
+                     p_domains = c(3,0,0,2,0,2,0), # a, b, c, ab, bc, ac, abc,
+                     sd_domains = c(1,1,5,1,1,5,5),
                      frame_cost = c(6, 3, 1))
 
 # print frame specific statistics
@@ -19,7 +21,7 @@ data %>% filter(A == 1) %>% summarise(mean_A = mean(Y), sd_A = sd(Y), cv_A = sd(
 data %>% filter(B == 1) %>% summarise(mean_B = mean(Y), sd_B = sd(Y), cv_B = sd(Y)/mean(Y))
 data %>% filter(C == 1) %>% summarise(mean_C = mean(Y), sd_C = sd(Y), cv_C = sd(Y)/mean(Y))
 
-n <- 900
+n <- 300
 
 N <- nrow(data)
 
@@ -32,7 +34,7 @@ N_B <- data %>% filter(domain == "b" | domain == "ab" | domain == "bc" | domain 
 
 # sample
 
-n.sim <- 10000
+n.sim <- 5000
 
 res_mf_m <- numeric(n.sim)
 res_mf_ka <- numeric(n.sim)
@@ -52,8 +54,8 @@ for (i in 1:n.sim)
 {
 # sample size allocation
   sigma2_alpha <- sigma_alpha_values(data = data, N_A = N_A, N_B = N_B, N_C = N_C)
-  n <- n_size(type = "optimal", N = N, N_A = N_A, N_B = N_B, N_C = N_C, C = 1000, 
-              c_0 = 100, sigma2_alpha = sigma2_alpha, n = 900, cost_frame = cost_frame)
+  n <- n_size(type = "proportional", N = N, N_A = N_A, N_B = N_B, N_C = N_C, C = 1000, 
+              c_0 = 100, sigma2_alpha = sigma2_alpha, n = 300, cost_frame = cost_frame)
 
   s_scr_reduced_size <- sample_scr_reduced_size(data, 
                                               n_A = n$n_A, 
@@ -61,7 +63,6 @@ for (i in 1:n.sim)
                                               n_C = n$n_C)
   
   s_scr_new_size_1 <- sample_scr_new_size_1(data, 
-                                            s_scr_reduced_size, 
                                             n_A = n$n_A, 
                                             n_B = n$n_B,
                                             n_C = n$n_C)
@@ -121,3 +122,5 @@ data.frame(length_s_A_excluded,
 (var_mf_multiplicity(data, n_A = n$n_A, n_B = n$n_B, n_C = n$n_C) - var(res_mf_m))/
   var_mf_multiplicity(data, n_A = n$n_A, n_B = n$n_B, n_C = n$n_C)*100
 
+(var_strat(data = data, s = s_scr_new_size_1) - var(res_strat_new_size_1))/
+  var_strat(data = data, s = s_scr_new_size_1)*100

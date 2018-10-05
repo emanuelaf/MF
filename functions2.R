@@ -5,54 +5,73 @@ require(dplyr)
 # generate pop with different variance differntials
 # at the moment, N fixed and overlap fixed!!
 
-generate_pop <- function(mu_domains, sd_domains, frame_cost) {
-  N <- 70000
+generate_pop <- function(N, p_domains, mu_domains, sd_domains, frame_cost) {
   
-  # modify overlap here
-  A <- c(rep(1, 40000), rep(0, 30000))
-  B <- c(rep(0, 10000), rep(1, 10000), rep(0, 10000), rep(1, 30000), rep(0, 10000))
-  C <- c(rep(0, 20000), rep(1, 30000), rep(0, 10000), rep(1, 10000))
+  p_domains = p_domains/sum(p_domains)
+  
+  n_domains = round(N*p_domains)
+  
+  domains = rbind(matrix(rep(c(1,0,0), n_domains[1]), ncol=3, byrow=TRUE),
+                  matrix(rep(c(0,1,0), n_domains[2]), ncol=3, byrow=TRUE),
+                  matrix(rep(c(0,0,1), n_domains[3]), ncol=3, byrow=TRUE),
+                  matrix(rep(c(1,1,0), n_domains[4]), ncol=3, byrow=TRUE),
+                  matrix(rep(c(0,1,1), n_domains[5]), ncol=3, byrow=TRUE),
+                  matrix(rep(c(1,0,1), n_domains[6]), ncol=3, byrow=TRUE),
+                  matrix(rep(c(1,1,1), n_domains[7]), ncol=3, byrow=TRUE))
+  
+  colnames(domains) = c("A","B","C")
   
   population <- data.frame(
     id = 1:N,
-    A = A,
-    B = B,
-    C = C
-    )
-
+    domains
+  )
+  
   population <- population %>% mutate(domain = ifelse(A == 1 & B == 0 & C == 0, "a",
-                                          ifelse(A == 0 & B == 1 & C == 0, "b",
-                                                 ifelse(A == 0 & B == 0 & C == 1, "c",
-                                                        ifelse(A == 1 & B == 1 & C == 0, "ab",
-                                                               ifelse(A == 1 & B == 0 & C == 1, "ac",
-                                                                      ifelse(A == 0 & B == 1 & C == 1, "bc",
-                                                                             ifelse(A == 1 & B == 1 & C == 1, "abc", NA))))
-                                                 )))) %>%
+                                                      ifelse(A == 0 & B == 1 & C == 0, "b",
+                                                             ifelse(A == 0 & B == 0 & C == 1, "c",
+                                                                    ifelse(A == 1 & B == 1 & C == 0, "ab",
+                                                                           ifelse(A == 1 & B == 0 & C == 1, "ac",
+                                                                                  ifelse(A == 0 & B == 1 & C == 1, "bc",
+                                                                                         ifelse(A == 1 & B == 1 & C == 1, "abc", NA))))
+                                                             )))) %>%
     mutate(frame_cost_A = frame_cost[1], frame_cost_B = frame_cost[2], frame_cost_C = frame_cost[3]) %>%
     as_tibble()
   
-  N_a <- length(population$domain[population$domain == "a"])
-  N_b <- length(population$domain[population$domain == "b"])
-  N_c <- length(population$domain[population$domain == "c"])
-  N_ab <- length(population$domain[population$domain == "ab"])
-  N_bc <- length(population$domain[population$domain == "bc"])
-  N_ac <- length(population$domain[population$domain == "ac"])
-  N_abc <- length(population$domain[population$domain == "abc"])
-
+  N_a   = n_domains[1]
+  N_b   = n_domains[2]
+  N_c   = n_domains[3]
+  N_ab  = n_domains[4]
+  N_bc  = n_domains[5]
+  N_ac  = n_domains[6]
+  N_abc = n_domains[7]
+  
+  set.seed(123)
   
   population <- population %>% mutate(
-    Y = ifelse(domain == "a", mu_domains[1] + rnorm(N_a, 0, sd_domains[1]),  
+    Y = ifelse(domain == "a", mu_domains[1] + rnorm(N_a, 0, sd_domains[1]),
                ifelse(domain == "b", mu_domains[2] + rnorm(N_b, 0, sd_domains[2]),
-               ifelse(domain == "c", mu_domains[3] + rnorm(N_c, 0, sd_domains[3]),
-               ifelse(domain == "ab", mu_domains[4] + rnorm(N_ab, 0, sd_domains[4]),
-               ifelse(domain == "bc", mu_domains[5] + rnorm(N_bc, 0, sd_domains[5]),
-               ifelse(domain == "ac", mu_domains[6] + rnorm(N_ac, 0, sd_domains[6]),
-               ifelse(domain == "abc", mu_domains[7] + rnorm(N_abc, 0, sd_domains[7]), 0)))))))
+                      ifelse(domain == "c", mu_domains[3] + rnorm(N_c, 0, sd_domains[3]),
+                             ifelse(domain == "ab", mu_domains[4] + rnorm(N_ab, 0, sd_domains[4]),
+                                    ifelse(domain == "bc", mu_domains[5] + rnorm(N_bc, 0, sd_domains[5]),
+                                           ifelse(domain == "ac", mu_domains[6] + rnorm(N_ac, 0, sd_domains[6]),
+                                                  ifelse(domain == "abc", mu_domains[7] + rnorm(N_abc, 0, sd_domains[7]), 0)))))))
   )
   
   return(population)
-
+  
 }
+
+
+#N <- 70
+
+#mu_domains = rep(0,7)
+#sd_domains = rep(1,7)
+#frame_cost = 1:3
+
+#p_domains = c(2,2,2,1,1,1,1) # a, b, c, ab, bc, ac, abc
+
+#generate_pop(N, p_domains, mu_domains, sd_domains, frame_cost)
+
 
 ### FINE TUNE DOMAIN VARIANCE
 
@@ -83,61 +102,78 @@ frame_sd <- function(pop_d, mu_domains, sd_domains){
 # n_doms <- c(rep(1e3, 3), 1e2, 2e3, 4e2, 1e2) # Population of each domain
 # mu_s <- c(rep(5, 3), 4, 3, 1, 1) # Means
 # sd_s <- c(rep(9, 3), 4, 5, 6, 6) # Standard deviations
-# frame_sd (pop_d = n_doms, mu_domains = mu_s, sd_domains = sd_s)
+# frame_sd(pop_d = n_doms, mu_domains = mu_s, sd_domains = sd_s)
   
-### SCREENER DESIGN
+### SCREENER DESIGN: implementation of sampling design
 
 # units not reallocated
 sample_scr_reduced_size <- function(data, n_A, n_B, n_C) {
   s_A_init <- sample_n(data[data$A == 1 , ], n_A)
   s_A_final <- s_A_init %>% filter(domain == "a")
   s_A_excluded <- anti_join(s_A_init, s_A_final, by = c("id"))
+  
   s_B_init <- sample_n(data[data$B == 1 , ], n_B)
   s_B_final <- s_B_init %>% filter(domain == "b" | domain == "ab")
   s_B_excluded <- anti_join(s_B_init, s_B_final, by = c("id"))
+  
   s_C_init <- sample_n(data[data$C == 1 , ], n_C)
-  s_C_final <- s_C_init 
+  s_C_final <- s_C_init
+  s_C_excluded <- anti_join(s_C_init, s_C_final, by = c("id"))
+
   samples <- list(s_A_init = s_A_init, s_A_final = s_A_final, s_A_excluded = s_A_excluded,
                   s_B_init = s_B_init, s_B_final = s_B_final, s_B_excluded = s_B_excluded,
-                  s_C_init = s_C_init, s_C_final = s_C_final)
+                  s_C_init = s_C_init, s_C_final = s_C_final, s_C_excluded = s_C_excluded)
+  
   return(samples)
 }
 
-# units reallocated in each frame --> togliere e sostituire con riallocazione in B e in C
-sample_scr_new_size_1 <- function(data, s_scr_reduced_size, n_A, n_B, n_C) {
+#s_scr_reduced_size <- sample_scr_reduced_size(data = population, n_A = n_A, n_B = n_B, n_C = n_C)
+
+# method 1: allocate in B and C
+sample_scr_new_size_1 <- function(data, n_A, n_B, n_C) {
   n <- n_A + n_B + n_C
-  s_A_excluded <- s_scr_reduced_size$s_A_excluded
-  s_A_final <- s_scr_reduced_size$s_A_final
-  
-  new_n_B <- n_B + nrow(s_A_excluded)/2
-  s_B_init <- sample_n(data[data$B == 1 , ], new_n_B)
-  s_B_final <- s_B_init %>% filter(domain == "b" | domain == "ab")
-  s_B_excluded <- anti_join(s_B_init, s_B_final, by = c("id"))
 
-  new_n_C <- n-(nrow(s_B_final) + nrow(s_A_final))
-  s_C_init <- sample_n(data[data$C == 1 , ], new_n_C)
-  s_C_final <- s_C_init 
-
-  results <- list(s_A_excluded = s_A_excluded, s_B_excluded = s_B_excluded,
-                   s_A_final = s_A_final, s_B_final = s_B_final, s_C_final = s_C_final)
-  return(results)
-}
-
-# units reallocated only in less expensive frame, that here coincides with the last one
-sample_scr_new_size_2 <- function(data, n_A, n_B, n_C) {
-  n <- n_A + n_B + n_C
   s_A_init <- sample_n(data[data$A == 1 , ], n_A)
   s_A_final <- s_A_init %>% filter(domain == "a")
   s_A_excluded <- anti_join(s_A_init, s_A_final, by = c("id"))
+  
+  n_B_plus <- n_B + (nrow(s_A_excluded))
+  s_B_init <- sample_n(data[data$B == 1 , ], n_B_plus)
+  s_B_final <- s_B_init %>% filter(domain == "b" | domain == "ab")
+  s_B_excluded <- anti_join(s_B_init, s_B_final, by = c("id"))
+  
+  n_C_plus <- n_C + (nrow(s_B_excluded))
+  s_C_init <- sample_n(data[data$C == 1 , ], n_C_plus)
+  s_C_final <- s_C_init
+  s_C_excluded <- anti_join(s_C_init, s_C_final, by = c("id"))
+  
+  samples <- list(s_A_init = s_A_init, s_A_final = s_A_final, s_A_excluded = s_A_excluded,
+                  s_B_init = s_B_init, s_B_final = s_B_final, s_B_excluded = s_B_excluded,
+                  s_C_init = s_C_init, s_C_final = s_C_final, s_C_excluded = s_C_excluded)
+  
+  return(samples)
+}
+
+# method 2: units reallocated only in less expensive frame, that here coincides with the last one
+sample_scr_new_size_2 <- function(data, n_A, n_B, n_C) {
+  n <- n_A + n_B + n_C
+  
+  s_A_init <- sample_n(data[data$A == 1 , ], n_A)
+  s_A_final <- s_A_init %>% filter(domain == "a")
+  s_A_excluded <- anti_join(s_A_init, s_A_final, by = c("id"))
+  
   s_B_init <- sample_n(data[data$B == 1 , ], n_B)
   s_B_final <- s_B_init %>% filter(domain == "b" | domain == "ab")
   s_B_excluded <- anti_join(s_B_init, s_B_final, by = c("id"))
-  n_C <- n - (nrow(s_A_final) + nrow(s_B_final))
-  s_C_init <- sample_n(data[data$C == 1 , ], n_C)
-  s_C_final <- s_C_init 
+  
+  n_C_plus <- n - (nrow(s_A_final) + nrow(s_B_final))
+  s_C_init <- sample_n(data[data$C == 1 , ], n_C_plus)
+  s_C_final <- s_C_init
+  s_C_excluded <- anti_join(s_C_init, s_C_final, by = c("id"))
+  
   samples <- list(s_A_init = s_A_init, s_A_final = s_A_final, s_A_excluded = s_A_excluded,
                   s_B_init = s_B_init, s_B_final = s_B_final, s_B_excluded = s_B_excluded,
-                  s_C_init = s_C_init, s_C_final = s_C_final)
+                  s_C_init = s_C_init, s_C_final = s_C_final, s_C_excluded = s_C_excluded)
   return(samples)
 }
 
@@ -149,7 +185,7 @@ sample_mf <- function(data, n_A, n_B, n_C) {
   s_C <- sample_n(data[data$C == 1 , ], n_C)
   samples <- list(s_A_init = NULL, s_A_final = s_A, s_A_excluded = NULL,
                   s_B_init = NULL, s_B_final = s_B, s_B_excluded = NULL,
-                  s_C_init = NULL, s_C_final = s_C)
+                  s_C_init = NULL, s_C_final = s_C, s_C_excluded = NULL)
   return(samples)
 }
 
@@ -180,6 +216,29 @@ est_strat <- function(s, N_a, N_b_ab, N_C) {
   hat_Y_C <- as.numeric((s$s_C_final %>% summarise(sum(Y))))
   hat_Y_str <- hat_Y_a*(N_a/n_a) + hat_Y_b_ab * (N_b_ab/n_b_ab) + hat_Y_C * (N_C/n_C)
   return(hat_Y_str)
+}
+
+
+var_strat <- function(data, s) {
+  data_a <- data %>% filter(domain == "a")
+  sigma2_a <- ifelse(nrow(data_a) != 0, var(data_a$Y)*((nrow(data_a)-1)/nrow(data_a)), 0)
+  N_a <- nrow(data_a)
+  n_a <- nrow(s$s_A_final)
+  
+  data_b_ab <- data %>% filter(domain == "a" | domain == "ab")
+  sigma2_b_ab <- ifelse(nrow(data_b_ab) != 0 , var(data_b_ab$Y)*((nrow(data_b_ab)-1)/nrow(data_b_ab)), 0)
+  N_b_ab <- nrow(data_b_ab)
+  n_b_ab <- nrow(s$s_B_final)
+  
+  data_C <- data %>% filter(C == 1)
+  sigma2_C <- ifelse(nrow(data_C) != 0, var(data_C$Y)*((nrow(data_C)-1)/nrow(data_C)), 0)
+  N_C <- nrow(data_C)
+  n_C <- nrow(s$s_C_final)
+  
+  var_Y_str <- (N_a^2*(sigma2_a/n_a) + N_b_ab^2*(sigma2_b_ab/n_b_ab) + N_C^2*(sigma2_C/n_C)) -
+    (N_a*sigma2_a + N_b_ab*sigma2_b_ab + N_C*sigma2_C)
+  
+  return(var_Y_str)
 }
 
 
